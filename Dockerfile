@@ -84,7 +84,6 @@ WORKDIR /
 
 # Copy the models and embeddings directories from the host to the container
 COPY test_input.json /
-COPY test_input_vanilla.json /
 COPY models/Lora /stable-diffusion-webui/models/Lora
 COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
 COPY models/openpose /stable-diffusion-webui/models/openpose
