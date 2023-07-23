@@ -64,7 +64,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
-# ARG SHA=89f9faa63388756314e8a1d96cf86bf5e0663045
+ARG SHA=1f697312617db511045698dbf419ae1e2999427d4e4423a321b461cc180d1a97
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd stable-diffusion-webui && \
     git fetch && \
