@@ -47,7 +47,6 @@ RUN --mount=type=cache,target=/cache --mount=type=cache,target=/root/.cache/pip 
 RUN --mount=type=cache,target=/root/.cache/pip \
     git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
-    git checkout dev && \
     pip install -r requirements_versions.txt
 
 COPY --from=download /repositories/ ${ROOT}/repositories/
@@ -72,6 +71,10 @@ RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.sa
 WORKDIR /extensions
 RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
 RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
+
+WORKDIR /stable-diffusion-webui
+RUN git checkout dev
+
 
 WORKDIR /
 
