@@ -27,9 +27,7 @@ def txt2img_inference(inference_request):
     '''
     Run inference on a request.
     '''
-    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/txt2img',
-                                      json=inference_request, timeout=600)
-
+    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/txt2img',json=inference_request, timeout=600)
     return response.json()
 
 def img2img_inference(inference_request):
