@@ -6,22 +6,20 @@ FROM alpine/git:2.36.2 as download
 COPY builder/clone.sh /clone.sh
 
 # Clone the repos and clean unnecessary files
-RUN . /clone.sh taming-transformers https://github.com/CompVis/taming-transformers.git 24268930bf1dce879235a7fddd0b2355b84d7ea6 && \
+RUN . /clone.sh taming-transformers https://github.com/CompVis/taming-transformers.git  && \
     rm -rf data assets **/*.ipynb
 
-RUN . /clone.sh stable-diffusion-stability-ai https://github.com/Stability-AI/stablediffusion.git 47b6b607fdd31875c9279cd2f4f16b92e4ea958e && \
+RUN . /clone.sh stable-diffusion-stability-ai https://github.com/Stability-AI/stablediffusion.git && \
     rm -rf assets data/**/*.png data/**/*.jpg data/**/*.gif
 
-RUN . /clone.sh CodeFormer https://github.com/sczhou/CodeFormer.git c5b4593074ba6214284d6acd5f1719b6c5d739af && \
+RUN . /clone.sh CodeFormer https://github.com/sczhou/CodeFormer.git  && \
     rm -rf assets inputs
 
-RUN . /clone.sh BLIP https://github.com/salesforce/BLIP.git 48211a1594f1321b00f14c9f7a5b4813144b2fb9 && \
-    . /clone.sh k-diffusion https://github.com/crowsonkb/k-diffusion.git 5b3af030dd83e0297272d861c19477735d0317ec && \
-    . /clone.sh clip-interrogator https://github.com/pharmapsychotic/clip-interrogator 2486589f24165c8e3b303f84e9dbbea318df83e8
+RUN . /clone.sh BLIP https://github.com/salesforce/BLIP.git  && \
+    . /clone.sh k-diffusion https://github.com/crowsonkb/k-diffusion.git  && \
+    . /clone.sh clip-interrogator https://github.com/pharmapsychotic/clip-interrogator 
 
 # RUN wget -O model.safetensors https://civitai.com/api/download/models/15236 
-# RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.safetensors 
-
 
 # ---------------------------------------------------------------------------- #
 #                        Stage 3: Build the final image                        #
@@ -63,6 +61,12 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd stable-diffusion-webui && \
+    git fetch && \
+    git checkout dev && \
+    pip install -r requirements_versions.txt    
+
 ADD src .
 
 COPY builder/cache.py /stable-diffusion-webui/cache.py
@@ -71,10 +75,6 @@ RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.sa
 WORKDIR /extensions
 RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
 RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
-
-WORKDIR /stable-diffusion-webui
-RUN git checkout dev
-
 
 WORKDIR /
 
