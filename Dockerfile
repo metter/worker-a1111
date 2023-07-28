@@ -19,6 +19,10 @@ RUN . /clone.sh BLIP https://github.com/salesforce/BLIP.git  && \
     . /clone.sh k-diffusion https://github.com/crowsonkb/k-diffusion.git  && \
     . /clone.sh clip-interrogator https://github.com/pharmapsychotic/clip-interrogator 
 
+# Clone and clean the Generative Models repository
+RUN . /clone.sh generative-models https://github.com/Stability-AI/generative-models.git  && \
+    rm -rf data assets **/*.ipynb    
+
 # RUN wget -O model.safetensors https://civitai.com/api/download/models/15236 
 
 # ---------------------------------------------------------------------------- #
@@ -49,6 +53,22 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 COPY --from=download /repositories/ ${ROOT}/repositories/
 #COPY --from=download /model.safetensors /model.safetensors
+
+# Install the Generative Models repository's requirements and the repository itself
+WORKDIR ${ROOT}/repositories/generative-models
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python3 -m venv .pt13 \
+    && source .pt13/bin/activate \
+    && pip install -r requirements/pt13.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python3 -m venv .pt2 \
+    && source .pt2/bin/activate \
+    && pip install -r requirements/pt2.txt
+RUN pip install .
+
+# Install sdata for training
+RUN pip install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata
+
 COPY /sd_xl_base_1.0.safetensors /model.safetensors
 RUN mkdir -p ${ROOT}/interrogate && cp -r ${ROOT}/repositories/clip-interrogator/clip_interrogator/data/. ${ROOT}/interrogate || true
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -68,9 +88,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements_versions.txt    
 
 ADD src .
-
-WORKDIR /repositories
-RUN git clone https://github.com/Stability-AI/generative-models.git
 
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.safetensors
