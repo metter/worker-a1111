@@ -64,9 +64,11 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
+ARG SHA=68f336bd994bed5442ad95bad6b6ad5564a5409a
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd stable-diffusion-webui && \
     git fetch && \
+    git reset --hard ${SHA} && \
     pip install -r requirements_versions.txt
 
 ADD src .
