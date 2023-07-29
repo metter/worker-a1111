@@ -69,6 +69,8 @@ RUN pip install .
 # Install sdata for training
 RUN pip install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata
 
+
+
 COPY /sd_xl_base_1.0.safetensors /model.safetensors
 RUN mkdir -p ${ROOT}/interrogate && cp -r ${ROOT}/repositories/clip-interrogator/clip_interrogator/data/. ${ROOT}/interrogate || true
 RUN --mount=type=cache,target=/root/.cache/pip \
