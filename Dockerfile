@@ -52,7 +52,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 COPY --from=download /repositories/ ${ROOT}/repositories/
 #COPY --from=download /model.safetensors /model.safetensors
-COPY v2-1_768-ema-pruned.safetensors  /model.safetensors
+COPY sd_xl_base_1.0.safetensors  /model.safetensors
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
