@@ -77,6 +77,9 @@ ADD src .
 WORKDIR /repositories
 RUN git clone https://github.com/Stability-AI/generative-models.git
 
+WORKDIR /
+RUN python launch.py
+
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.safetensors
 
