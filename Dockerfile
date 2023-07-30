@@ -78,8 +78,6 @@ ADD src .
 WORKDIR /repositories
 RUN git clone https://github.com/Stability-AI/generative-models.git
 
-RUN cd /stable-diffusion-webui && python launch.py 
-
 WORKDIR /
 
 COPY sd_xl_base_1.0.yaml /
