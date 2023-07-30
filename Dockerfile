@@ -164,4 +164,5 @@ RUN apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
 RUN chmod +x /start.sh
+CMD ls -l
 #CMD /start.sh
