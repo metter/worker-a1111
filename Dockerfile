@@ -75,8 +75,19 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 ADD src .
 
-WORKDIR /repositories
+WORKDIR /stable-diffusion-webui/repositories
 RUN git clone https://github.com/Stability-AI/generative-models.git
+
+WORKDIR /stable-diffusion-webui/repositories/generative-models
+
+# install required packages from pypi
+RUN python3 -m venv .pt2
+RUN source .pt2/bin/activate
+RUN pip3 install -r requirements/pt2.txt
+RUN pip3 install .
+RUN pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata
+RUN pip install hatch
+RUN hatch build -t wheel
 
 WORKDIR /
 
