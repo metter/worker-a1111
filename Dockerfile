@@ -65,7 +65,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
-ARG SHA=68f336bd994bed5442ad95bad6b6ad5564a5409a
+#1.5.0
+ARG SHA=68f336bd994bed5442ad95bad6b6ad5564a5409a 
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd stable-diffusion-webui && \
     git fetch && \
@@ -79,8 +80,8 @@ RUN git clone https://github.com/Stability-AI/generative-models.git
 
 WORKDIR /
 
-COPY builder/cache.py /stable-diffusion-webui/cache.py
-RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.safetensors
+#COPY builder/cache.py /stable-diffusion-webui/cache.py
+#RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.safetensors
 
 WORKDIR /extensions
 RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
