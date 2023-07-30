@@ -132,8 +132,8 @@ COPY sd_xl_base_1.0.yaml /
 WORKDIR /stable-diffusion-webui
 
 # Activate the virtual environment and install dependencies
-RUN python3 -m venv .pt2
-RUN .pt2/bin/activate && pip install -r requirements_versions.txt
+RUN /stable-diffusion-webui/.pt2/bin/python -m pip install -r /stable-diffusion-webui/requirements_versions.txt
+
 
 # Continue with the rest of the steps
 COPY builder/cache.py /stable-diffusion-webui/cache.py
