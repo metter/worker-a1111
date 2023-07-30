@@ -78,6 +78,8 @@ ADD src .
 WORKDIR /repositories
 RUN git clone https://github.com/Stability-AI/generative-models.git
 
+RUN cd /stable-diffusion-webui && python relaunch.py 
+
 WORKDIR /
 
 COPY builder/cache.py /stable-diffusion-webui/cache.py
