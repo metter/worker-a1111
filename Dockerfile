@@ -82,6 +82,7 @@ RUN cd /stable-diffusion-webui && python launch.py
 
 WORKDIR /
 
+COPY sd_xl_base_1.0.yaml /
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.safetensors
 
