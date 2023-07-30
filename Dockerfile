@@ -78,7 +78,7 @@ ADD src .
 WORKDIR /repositories
 RUN git clone https://github.com/Stability-AI/generative-models.git
 
-RUN cd /stable-diffusion-webui && python relaunch.py 
+RUN cd /stable-diffusion-webui && python launch.py 
 
 WORKDIR /
 
