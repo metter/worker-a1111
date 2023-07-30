@@ -136,7 +136,7 @@ WORKDIR /stable-diffusion-webui
 
 # Activate the virtual environment and install project dependencies
 RUN python3 -m venv .pt2
-RUN .pt2/bin/activate && pip install -r requirements_versions.txt
+RUN chmod +x .pt2/bin/activate && . .pt2/bin/activate && pip install -r requirements_versions.txt
 
 # Copy the cache.py script and run the cache step
 COPY builder/cache.py /stable-diffusion-webui/cache.py
