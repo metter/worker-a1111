@@ -80,8 +80,8 @@ RUN git clone https://github.com/Stability-AI/generative-models.git
 
 WORKDIR /
 
-#COPY builder/cache.py /stable-diffusion-webui/cache.py
-#RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.safetensors
+COPY builder/cache.py /stable-diffusion-webui/cache.py
+RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.safetensors
 
 WORKDIR /extensions
 RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
