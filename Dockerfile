@@ -25,8 +25,9 @@ RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusio
 
 
 # ---------------------------------------------------------------------------- #
-#                        Stage 2: Clone stable-diffusion-webui                  #
+#                        Stage 2: Clone stable-diffusion-webui                 #
 # ---------------------------------------------------------------------------- #
+RUN apt-get update && apt-get install -y supervisor
 FROM python:3.10.9-slim as clone_webui
 
 # Set the working directory to /stable-diffusion-webui
@@ -39,7 +40,7 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git \
     && pip install -r requirements_versions.txt
 
 # ---------------------------------------------------------------------------- #
-#                        Stage 3: Build Generative Models                       #
+#                        Stage 3: Build Generative Models                      #
 # ---------------------------------------------------------------------------- #
 FROM python:3.10.9-slim as generative_models
 
