@@ -3,8 +3,9 @@
 
 echo "Worker Initiated"
 
-echo "Starting supervisord"
-supervisord -c /supervisord.conf
+while true; do
+  sleep 3600  # Sleep for 1 hour before checking again (adjust as needed)
+done
 
 
 #echo "Worker Initiated"
