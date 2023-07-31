@@ -27,7 +27,6 @@ RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusio
 # ---------------------------------------------------------------------------- #
 #                        Stage 2: Clone stable-diffusion-webui                 #
 # ---------------------------------------------------------------------------- #
-RUN apt-get update && apt-get install -y supervisor
 FROM python:3.10.9-slim as clone_webui
 
 # Set the working directory to /stable-diffusion-webui
