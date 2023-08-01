@@ -17,9 +17,9 @@ RUN . /clone.sh CodeFormer https://github.com/sczhou/CodeFormer.git c5b4593074ba
 
 RUN . /clone.sh BLIP https://github.com/salesforce/BLIP.git 48211a1594f1321b00f14c9f7a5b4813144b2fb9 && \
     . /clone.sh k-diffusion https://github.com/crowsonkb/k-diffusion.git 5b3af030dd83e0297272d861c19477735d0317ec && \
-    . /clone.sh clip-interrogator https://github.com/pharmapsychotic/clip-interrogator 2486589f24165c8e3b303f84e9dbbea318df83e8
+    . /clone.sh clip-interrogator https://github.com/pharmapsychotic/clip-interrogator 2486589f24165c8e3b303f84e9dbbea318df83e8 && \
+    . /clone.sh generative-models https://github.com/Stability-AI/generative-models.git
 
-# RUN wget -O model.safetensors https://civitai.com/api/download/models/15236 
 WORKDIR /download
 RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors && ls -la
 
@@ -94,6 +94,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     git reset --hard 68f336bd994bed5442ad95bad6b6ad5564a5409a && \
     pip install -r requirements_versions.txt
 
+#copy from download stage
 COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors /model.safetensors
 
@@ -103,6 +104,17 @@ RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/
 # Install CodeFormer dependencies
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
+
+# Install generative models dependencies
+WORKDIR ${ROOT}/repositories/generative-models
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python3 -m venv .pt2 \
+    && . .pt2/bin/activate \
+    && pip3 install -r requirements/pt2.txt \
+    && pip3 install . \
+    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
+    && pip install hatch \
+    && hatch build -t wheel    
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
@@ -121,22 +133,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # Add the source files to the working directory
 ADD src .
-
-WORKDIR /stable-diffusion-webui/repositories
-
-# Clone the generative models repository
-RUN git clone https://github.com/Stability-AI/generative-models.git
-
-WORKDIR /stable-diffusion-webui/repositories/generative-models
-
-# Install required packages from pypi inside the virtual environment
-RUN python3 -m venv .pt2
-RUN . .pt2/bin/activate \
-    && pip3 install -r requirements/pt2.txt \
-    && pip3 install . \
-    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
-    && pip install hatch \
-    && hatch build -t wheel
+ADD test_inputs_folder .
 
 # Continue with the rest of the steps
 WORKDIR /stable-diffusion-webui
@@ -158,7 +155,6 @@ RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
 WORKDIR /
 
 # Copy the models and embeddings directories from the host to the container
-COPY /test_inputs_folder /test_inputs_folder
 COPY models/Lora /stable-diffusion-webui/models/Lora
 COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
 COPY models/openpose /stable-diffusion-webui/models/openpose
