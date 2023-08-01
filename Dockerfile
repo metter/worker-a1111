@@ -63,14 +63,7 @@ RUN . .pt2/bin/activate \
 # ---------------------------------------------------------------------------- #
 #                         Stage 4: Build the final image                        #
 # ---------------------------------------------------------------------------- #
-FROM python:3.10.9-slim
-
-# Install nano and mc and fish
-RUN apt-get update && apt-get install -y nano mc fish && \
-    rm -rf /var/lib/apt/lists/*
-
-# Set fish as the default shell for the root user
-RUN chsh -s /usr/bin/fish root    
+FROM python:3.10.9-slim  
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_PREFER_BINARY=1 \
@@ -80,9 +73,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+USER root
 RUN apt-get update && \
     apt install -y \
-    fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev procps && \
+    fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev procps nano mc fish && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
 RUN --mount=type=cache,target=/cache --mount=type=cache,target=/root/.cache/pip \
