@@ -65,9 +65,12 @@ RUN . .pt2/bin/activate \
 # ---------------------------------------------------------------------------- #
 FROM python:3.10.9-slim
 
-# Install nano and mc
-RUN apt-get update && apt-get install -y nano mc && \
+# Install nano and mc and fish
+RUN apt-get update && apt-get install -y nano mc fish && \
     rm -rf /var/lib/apt/lists/*
+
+# Set fish as the default shell for the root user
+RUN chsh -s /usr/bin/fish root    
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_PREFER_BINARY=1 \
@@ -155,7 +158,7 @@ RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
 WORKDIR /
 
 # Copy the models and embeddings directories from the host to the container
-COPY /test_inputs_folder /
+COPY /test_inputs_folder /test_inputs_folder
 COPY models/Lora /stable-diffusion-webui/models/Lora
 COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
 COPY models/openpose /stable-diffusion-webui/models/openpose
