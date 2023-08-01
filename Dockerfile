@@ -65,6 +65,10 @@ RUN . .pt2/bin/activate \
 # ---------------------------------------------------------------------------- #
 FROM python:3.10.9-slim
 
+# Install nano and mc
+RUN apt-get update && apt-get install -y nano mc && \
+    rm -rf /var/lib/apt/lists/*
+
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_PREFER_BINARY=1 \
     LD_PRELOAD=libtcmalloc.so \
