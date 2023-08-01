@@ -25,7 +25,7 @@ RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusio
 
 
 # ---------------------------------------------------------------------------- #
-#                        Stage 2: Clone stable-diffusion-webui                  #
+#                        Stage 2: Clone stable-diffusion-webui                 #
 # ---------------------------------------------------------------------------- #
 FROM python:3.10.9-slim as clone_webui
 
@@ -39,7 +39,7 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git \
     && pip install -r requirements_versions.txt
 
 # ---------------------------------------------------------------------------- #
-#                        Stage 3: Build Generative Models                       #
+#                        Stage 3: Build Generative Models                      #
 # ---------------------------------------------------------------------------- #
 FROM python:3.10.9-slim as generative_models
 
@@ -155,8 +155,7 @@ RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
 WORKDIR /
 
 # Copy the models and embeddings directories from the host to the container
-COPY test_input.json /
-COPY test_input_vanilla.json /
+COPY /test_inputs_folder /
 COPY models/Lora /stable-diffusion-webui/models/Lora
 COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
 COPY models/openpose /stable-diffusion-webui/models/openpose
