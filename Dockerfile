@@ -33,7 +33,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PIP_PREFER_BINARY=1 \
     LD_PRELOAD=libtcmalloc.so \
     ROOT=/stable-diffusion-webui \
-    PYTHONUNBUFFERED=1 \
+    PYTHONUNBUFFERED=1 
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
