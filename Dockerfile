@@ -25,29 +25,40 @@ RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusio
 
 
 # ---------------------------------------------------------------------------- #
-#                        Stage 2: Clone stable-diffusion-webui                 #
+#                         Stage 2: Build the final image                       #
 # ---------------------------------------------------------------------------- #
-FROM python:3.10.9-slim as clone_webui
+FROM python:3.10.9-slim
 
-# Set the working directory to /stable-diffusion-webui
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_PREFER_BINARY=1 \
+    LD_PRELOAD=libtcmalloc.so \
+    ROOT=/stable-diffusion-webui \
+    PYTHONUNBUFFERED=1 \
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+USER root
+RUN apt-get update && \
+    apt install -y \
+    fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev procps nano mc fish && \
+    apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
+
+# Clone the repository
+RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git /stable-diffusion-webui
+
 WORKDIR /stable-diffusion-webui
 
-# Clone the stable-diffusion-webui repository and install its requirements
-RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git \
-    && cd stable-diffusion-webui \
-    && git reset --hard 68f336bd994bed5442ad95bad6b6ad5564a5409a \
-    && pip install -r requirements_versions.txt
+# Reset to the specific commit and install requirements
+RUN git reset --hard 68f336bd994bed5442ad95bad6b6ad5564a5409a \
+    && --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements_versions.txt
 
-# ---------------------------------------------------------------------------- #
-#                        Stage 3: Build Generative Models                      #
-# ---------------------------------------------------------------------------- #
-FROM python:3.10.9-slim as generative_models
+RUN --mount=type=cache,target=/cache --mount=type=cache,target=/root/.cache/pip \
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
-# Set the working directory to /stable-diffusion-webui/repositories
-WORKDIR /stable-diffusion-webui/repositories
-
-# Clone the generative-models repository and install its requirements
-RUN git clone https://github.com/Stability-AI/generative-models.git
+#copy from download stage
+COPY --from=download /repositories/ ${ROOT}/repositories/
+COPY --from=download /download/model.safetensors /model.safetensors
 
 WORKDIR /stable-diffusion-webui/repositories/generative-models
 
@@ -58,39 +69,7 @@ RUN . .pt2/bin/activate \
     && pip3 install . \
     && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
     && pip install hatch \
-    && hatch build -t wheel
-
-# ---------------------------------------------------------------------------- #
-#                         Stage 4: Build the final image                        #
-# ---------------------------------------------------------------------------- #
-FROM python:3.10.9-slim  
-
-ENV DEBIAN_FRONTEND=noninteractive \
-    PIP_PREFER_BINARY=1 \
-    LD_PRELOAD=libtcmalloc.so \
-    ROOT=/stable-diffusion-webui \
-    PYTHONUNBUFFERED=1
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-USER root
-RUN apt-get update && \
-    apt install -y \
-    fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev procps nano mc fish && \
-    apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
-
-RUN --mount=type=cache,target=/cache --mount=type=cache,target=/root/.cache/pip \
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
-RUN --mount=type=cache,target=/root/.cache/pip \
-    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
-    cd stable-diffusion-webui && \
-    git reset --hard 68f336bd994bed5442ad95bad6b6ad5564a5409a && \
-    pip install -r requirements_versions.txt
-
-#copy from download stage
-COPY --from=download /repositories/ ${ROOT}/repositories/
-COPY --from=download /download/model.safetensors /model.safetensors
+    && hatch build -t wheel     
 
 # Create a directory for the interrogator data and copy the files
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
@@ -110,6 +89,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     && pip install hatch \
     && hatch build -t wheel    
 
+WORKDIR /    
+
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -128,13 +109,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Add the source files to the working directory
 ADD src .
 ADD test_inputs_folder .
-
-# Continue with the rest of the steps
-WORKDIR /stable-diffusion-webui
-
-# Activate the virtual environment and install project dependencies
-RUN python3 -m venv .pt2
-RUN chmod +x .pt2/bin/activate && . .pt2/bin/activate && pip install -r requirements_versions.txt
 
 # Copy the cache.py script and run the cache step
 COPY builder/cache.py /stable-diffusion-webui/cache.py
