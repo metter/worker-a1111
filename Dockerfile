@@ -31,7 +31,6 @@ FROM python:3.10.9-slim
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_PREFER_BINARY=1 \
-    LD_PRELOAD=libtcmalloc.so \
     ROOT=/stable-diffusion-webui \
     PYTHONUNBUFFERED=1 
 
@@ -42,6 +41,8 @@ RUN apt-get update && \
     apt install -y \
     fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev procps nano mc fish && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
+
+ENV LD_PRELOAD=libtcmalloc.so  
 
 # Clone the repository
 RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git /stable-diffusion-webui
