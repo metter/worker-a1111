@@ -27,7 +27,7 @@ RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusio
 # ---------------------------------------------------------------------------- #
 #                         Stage 2: Build the final image                       #
 # ---------------------------------------------------------------------------- #
-FROM python:3.10.9-slim
+FROM python:3.10-buster
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_PREFER_BINARY=1 \
