@@ -58,7 +58,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 #copy from download stage
 COPY --from=download /repositories/ ${ROOT}/repositories/
-COPY --from=download /download/model.safetensors /model.safetensors
+COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
 
 WORKDIR /stable-diffusion-webui/repositories/generative-models
 
@@ -108,7 +108,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # Add the source files to the working directory
 ADD src .
-ADD test_inputs_folder .
+ADD test_inputs_folder /test_inputs_folder
 
 # Copy the cache.py script and run the cache step
 WORKDIR /stable-diffusion-webui
