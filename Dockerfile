@@ -111,8 +111,9 @@ ADD src .
 ADD test_inputs_folder .
 
 # Copy the cache.py script and run the cache step
+WORKDIR /stable-diffusion-webui
 COPY builder/cache.py /stable-diffusion-webui/cache.py
-RUN python cache.py --use-cpu=all --ckpt /model.safetensors
+RUN python cache.py --use-cpu=all --ckpt model.safetensors
 
 WORKDIR /stable-diffusion-webui/extensions
 
