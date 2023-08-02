@@ -127,6 +127,10 @@ WORKDIR /stable-diffusion-webui/extensions
 RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
 RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
 
+# Install sd-webui-controlnet dependencies
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r ${ROOT}/extensions/sd-webui-controlnet/requirements.txt
+
 WORKDIR /
 
 # Copy the models and embeddings directories from the host to the container
