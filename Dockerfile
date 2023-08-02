@@ -50,11 +50,10 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git /stabl
 WORKDIR /stable-diffusion-webui
 
 # Reset to the specific commit and install requirements
-RUN git reset --hard 68f336bd994bed5442ad95bad6b6ad5564a5409a \
-    && --mount=type=cache,target=/root/.cache/pip \
+RUN git reset --hard 68f336bd994bed5442ad95bad6b6ad5564a5409a && \
     pip install -r requirements_versions.txt
 
-RUN --mount=type=cache,target=/cache --mount=type=cache,target=/root/.cache/pip \
+RUN --mount=type=cache,target=/root/.cache/pip \
     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 #copy from download stage
