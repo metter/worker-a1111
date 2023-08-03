@@ -45,7 +45,6 @@ def handler(event):
     try:
         print("try loop started")
         input_data = event["input"]
-        prompt = input_data["prompt"]
 
         txt2img_assembly_instructions = input_data.get("pos", "")
 
