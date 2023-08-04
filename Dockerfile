@@ -60,6 +60,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
 
+# Install generative models
 WORKDIR /stable-diffusion-webui/repositories/generative-models
 
 # Install required packages from pypi inside the virtual environment
@@ -76,18 +77,7 @@ RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/
 
 # Install CodeFormer dependencies
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
-
-# Install generative models dependencies
-WORKDIR ${ROOT}/repositories/generative-models
-RUN --mount=type=cache,target=/root/.cache/pip \
-    python3 -m venv .pt2 \
-    && . .pt2/bin/activate \
-    && pip3 install -r requirements/pt2.txt \
-    && pip3 install . \
-    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
-    && pip install hatch \
-    && hatch build -t wheel    
+    pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt  
 
 WORKDIR /    
 
@@ -121,22 +111,22 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN python cache.py --use-cpu=all --ckpt model.safetensors
 
-# WORKDIR /stable-diffusion-webui/extensions
+WORKDIR /stable-diffusion-webui/extensions
 
 # Clone some extensions
-# RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
-# RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
+#RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
+#RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
 
 # Install sd-webui-controlnet dependencies
-# RUN --mount=type=cache,target=/root/.cache/pip \
-#     pip install -r ${ROOT}/extensions/sd-webui-controlnet/requirements.txt
+#RUN --mount=type=cache,target=/root/.cache/pip \
+#    pip install -r ${ROOT}/extensions/sd-webui-controlnet/requirements.txt
 
 WORKDIR /
 
 # Copy the models and embeddings directories from the host to the container
 COPY models/Lora /stable-diffusion-webui/models/Lora
-# COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
-# COPY models/openpose /stable-diffusion-webui/models/openpose
+#COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
+#COPY models/openpose /stable-diffusion-webui/models/openpose
 COPY embeddings /stable-diffusion-webui/embeddings
 
 # Cleanup section (Worker Template)
