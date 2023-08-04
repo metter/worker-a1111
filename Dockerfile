@@ -121,22 +121,22 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN python cache.py --use-cpu=all --ckpt model.safetensors
 
-WORKDIR /stable-diffusion-webui/extensions
+# WORKDIR /stable-diffusion-webui/extensions
 
 # Clone some extensions
-RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
-RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
+# RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
+# RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
 
 # Install sd-webui-controlnet dependencies
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r ${ROOT}/extensions/sd-webui-controlnet/requirements.txt
+# RUN --mount=type=cache,target=/root/.cache/pip \
+#     pip install -r ${ROOT}/extensions/sd-webui-controlnet/requirements.txt
 
 WORKDIR /
 
 # Copy the models and embeddings directories from the host to the container
 COPY models/Lora /stable-diffusion-webui/models/Lora
-COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
-COPY models/openpose /stable-diffusion-webui/models/openpose
+# COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
+# COPY models/openpose /stable-diffusion-webui/models/openpose
 COPY embeddings /stable-diffusion-webui/embeddings
 
 # Cleanup section (Worker Template)
