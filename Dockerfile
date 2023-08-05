@@ -103,11 +103,9 @@ ADD test_inputs_folder /test_inputs_folder
 # Copy the cache.py script and run the cache step
 WORKDIR /stable-diffusion-webui
 RUN pip uninstall -y torchvision
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install  torchvision --index-url https://download.pytorch.org/whl/cu118
+RUN pip install  torchvision --index-url https://download.pytorch.org/whl/cu118
 RUN pip uninstall -y torch
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install  torch --index-url https://download.pytorch.org/whl/cu118    
+RUN pip install  torch --index-url https://download.pytorch.org/whl/cu118    
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN python cache.py --use-cpu=all --ckpt model.safetensors
 
