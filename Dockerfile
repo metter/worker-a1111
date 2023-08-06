@@ -60,6 +60,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
 
+# Install generative models
 WORKDIR /stable-diffusion-webui/repositories/generative-models
 
 # Install required packages from pypi inside the virtual environment
@@ -76,7 +77,7 @@ RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/
 
 # Install CodeFormer dependencies
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
+    pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt  
 
 # Set the working directory in the container
 WORKDIR /stable-diffusion-webui/repositories/CodeFormer/weights/facelib/
@@ -118,30 +119,28 @@ ADD test_inputs_folder /test_inputs_folder
 # Copy the cache.py script and run the cache step
 WORKDIR /stable-diffusion-webui
 RUN pip uninstall -y torchvision
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install  torchvision --index-url https://download.pytorch.org/whl/cu118
+RUN pip install  torchvision --index-url https://download.pytorch.org/whl/cu118
 RUN pip uninstall -y torch
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install  torch --index-url https://download.pytorch.org/whl/cu118    
+RUN pip install  torch --index-url https://download.pytorch.org/whl/cu118    
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN python cache.py --use-cpu=all --ckpt model.safetensors
 
 WORKDIR /stable-diffusion-webui/extensions
 
 # Clone some extensions
-RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
-RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
+#RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git
+#RUN git clone https://github.com/Extraltodeus/multi-subject-render.git
 
 # Install sd-webui-controlnet dependencies
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r ${ROOT}/extensions/sd-webui-controlnet/requirements.txt
+#RUN --mount=type=cache,target=/root/.cache/pip \
+#    pip install -r ${ROOT}/extensions/sd-webui-controlnet/requirements.txt
 
 WORKDIR /
 
 # Copy the models and embeddings directories from the host to the container
 COPY models/Lora /stable-diffusion-webui/models/Lora
-COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
-COPY models/openpose /stable-diffusion-webui/models/openpose
+#COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
+#COPY models/openpose /stable-diffusion-webui/models/openpose
 COPY embeddings /stable-diffusion-webui/embeddings
 
 # Cleanup section (Worker Template)

@@ -1,14 +1,14 @@
-#!/bin/bash
+!/bin/bash
 
 
-echo "Worker Initiated"
+#echo "Worker Initiated in sleep mode"
 
 #while true; do
 #  sleep 3600  # Sleep for 1 hour before checking again (adjust as needed)
 #done
 
 
-#echo "Worker Initiated"
+echo "Worker Initiated"
 
 echo "Starting WebUI API"
 #python /stable-diffusion-webui/webui.py --ckpt /model.safetensors --lowram --disable-safe-unpickle --port 3000 --api --nowebui --skip-version-check  --no-hashing --no-download-sd-model &
