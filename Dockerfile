@@ -21,7 +21,7 @@ RUN . /clone.sh BLIP https://github.com/salesforce/BLIP.git 48211a1594f1321b00f1
     . /clone.sh generative-models https://github.com/Stability-AI/generative-models.git 45c443b316737a4ab6e40413d7794a7f5657c19f
 
 WORKDIR /download
-RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors && ls -la
+RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors && ls -la
 
 
 # ---------------------------------------------------------------------------- #
@@ -77,6 +77,11 @@ RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/
 # Install CodeFormer dependencies
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
+
+# Set the working directory in the container
+WORKDIR /stable-diffusion-webui/repositories/CodeFormer/weights/facelib/
+# Download the file using wget
+RUN wget https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/parsing_parsenet.pth    
 
 # Install generative models dependencies
 WORKDIR ${ROOT}/repositories/generative-models
