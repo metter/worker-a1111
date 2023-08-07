@@ -114,7 +114,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # Add the source files to the working directory
 ADD src .
-ADD test_inputs_folder /test_inputs_folder
+ADD test_inputs_folder /test_input
 
 # Copy the cache.py script and run the cache step
 WORKDIR /stable-diffusion-webui
