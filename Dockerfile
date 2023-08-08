@@ -21,7 +21,9 @@ RUN . /clone.sh BLIP https://github.com/salesforce/BLIP.git 48211a1594f1321b00f1
     . /clone.sh generative-models https://github.com/Stability-AI/generative-models.git 45c443b316737a4ab6e40413d7794a7f5657c19f
 
 WORKDIR /download
-RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors && ls -la
+RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors 
+RUN wget -O sdxl_vae.safetensors https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors 
+
 
 
 # ---------------------------------------------------------------------------- #
@@ -59,6 +61,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 #copy from download stage
 COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
+COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusion/VAE/sdxl_vae.safetensors
 
 # Install generative models
 WORKDIR /stable-diffusion-webui/repositories/generative-models
