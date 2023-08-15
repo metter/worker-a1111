@@ -6,8 +6,8 @@ FROM alpine/git:2.36.2 as download
 COPY builder/clone.sh /clone.sh
 
 # Clone the repos and clean unnecessary files
-RUN . /clone.sh taming-transformers https://github.com/CompVis/taming-transformers.git 24268930bf1dce879235a7fddd0b2355b84d7ea6 && \
-    rm -rf data assets **/*.ipynb
+#RUN . /clone.sh taming-transformers https://github.com/CompVis/taming-transformers.git 24268930bf1dce879235a7fddd0b2355b84d7ea6 && \
+#    rm -rf data assets **/*.ipynb
 
 RUN . /clone.sh stable-diffusion-stability-ai https://github.com/Stability-AI/stablediffusion.git cf1d67a6fd5ea1aa600c4df58e5b47da45f6bdbf && \
     rm -rf assets data/**/*.png data/**/*.jpg data/**/*.gif
@@ -64,16 +64,18 @@ COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
 COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusion/VAE/sdxl_vae.safetensors
 
 # Install generative models
-WORKDIR /stable-diffusion-webui/repositories/generative-models
+#WORKDIR /stable-diffusion-webui/repositories/generative-models
 
 # Install required packages from pypi inside the virtual environment
-RUN python3 -m venv .pt2
-RUN . .pt2/bin/activate \
-    && pip3 install -r requirements/pt2.txt \
-    && pip3 install . \
-    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
-    && pip install hatch \
-    && hatch build -t wheel     
+#RUN python3 -m venv .pt2
+#RUN . .pt2/bin/activate \
+#    && pip3 install -r requirements/pt2.txt \
+#    && pip3 install . \
+#    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
+#    && pip install hatch \
+#    && hatch build -t wheel     
+
+RUN python launch.py --exit
 
 # Create a directory for the interrogator data and copy the files
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
