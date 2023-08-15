@@ -75,7 +75,7 @@ COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusi
 #    && pip install hatch \
 #    && hatch build -t wheel     
 
-RUN python launch.py --exit
+RUN python launch.py --skip-torch-cuda-test  --exit
 
 # Create a directory for the interrogator data and copy the files
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
