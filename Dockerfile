@@ -8,10 +8,6 @@ WORKDIR /download
 COPY builder/clone.sh .
 
 # Clone the repos and clean unnecessary files
-RUN chmod +x clone.sh && \
-    ./clone.sh taming-transformers https://github.com/CompVis/taming-transformers.git 24268930bf1dce879235a7fddd0b2355b84d7ea6 && \
-    rm -rf data assets **/*.ipynb
-
 RUN ./clone.sh stable-diffusion-stability-ai https://github.com/Stability-AI/stablediffusion.git cf1d67a6fd5ea1aa600c4df58e5b47da45f6bdbf && \
     rm -rf assets data/**/*.png data/**/*.jpg data/**/*.gif
 
@@ -69,17 +65,10 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # Clone the generative models repository and set up its environment
 RUN git clone https://github.com/Stability-AI/generative-models.git ${ROOT}/repositories/generative-models
-WORKDIR ${ROOT}/repositories/generative-models
-
-RUN python3 -m venv .pt2
-RUN . .pt2/bin/activate \
-    && pip3 install -r requirements/pt2.txt \
-    && pip3 install . \
-    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
-    && pip install hatch \
-    && hatch build -t wheel
 
 WORKDIR /stable-diffusion-webui
+
+RUN python launch.py --exit
 
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN python cache.py --use-cpu=all --ckpt /model.safetensors
