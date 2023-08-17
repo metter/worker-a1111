@@ -25,7 +25,6 @@ RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusio
 RUN wget -O sdxl_vae.safetensors https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors 
 
 
-
 # ---------------------------------------------------------------------------- #
 #                         Stage 2: Build the final image                       #
 # ---------------------------------------------------------------------------- #
@@ -75,6 +74,8 @@ COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusi
 #    && pip install hatch \
 #    && hatch build -t wheel     
 
+RUN python3 -m venv venv
+RUN . venv/bin/activate \
 RUN python launch.py --skip-torch-cuda-test  --exit
 
 # Create a directory for the interrogator data and copy the files
@@ -87,18 +88,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Set the working directory in the container
 WORKDIR /stable-diffusion-webui/repositories/CodeFormer/weights/facelib/
 # Download the file using wget
-RUN wget https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/parsing_parsenet.pth    
-
-# Install generative models dependencies
-WORKDIR ${ROOT}/repositories/generative-models
-RUN --mount=type=cache,target=/root/.cache/pip \
-    python3 -m venv .pt2 \
-    && . .pt2/bin/activate \
-    && pip3 install -r requirements/pt2.txt \
-    && pip3 install . \
-    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
-    && pip install hatch \
-    && hatch build -t wheel    
+RUN wget https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/parsing_parsenet.pth      
 
 WORKDIR /    
 
@@ -110,12 +100,12 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     rm /requirements.txt
 
 # Switch to the specified SHA
-ARG SHA=68f336bd994bed5442ad95bad6b6ad5564a5409a 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    cd stable-diffusion-webui && \
-    git fetch && \
-    git reset --hard ${SHA} && \
-    pip install -r requirements_versions.txt
+#ARG SHA=68f336bd994bed5442ad95bad6b6ad5564a5409a 
+#RUN --mount=type=cache,target=/root/.cache/pip \
+#    cd stable-diffusion-webui && \
+#    git fetch && \
+#    git reset --hard ${SHA} && \
+#    pip install -r requirements_versions.txt
 
 # Add the source files to the working directory
 ADD src .
@@ -123,10 +113,10 @@ ADD test_inputs_folder /test_input
 
 # Copy the cache.py script and run the cache step
 WORKDIR /stable-diffusion-webui
-RUN pip uninstall -y torchvision
-RUN pip install  torchvision --index-url https://download.pytorch.org/whl/cu118
-RUN pip uninstall -y torch
-RUN pip install  torch --index-url https://download.pytorch.org/whl/cu118    
+#RUN pip uninstall -y torchvision
+#RUN pip install  torchvision --index-url https://download.pytorch.org/whl/cu118
+#RUN pip uninstall -y torch
+#RUN pip install  torch --index-url https://download.pytorch.org/whl/cu118    
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN python cache.py --use-cpu=all --ckpt model.safetensors
 
