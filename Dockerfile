@@ -118,9 +118,9 @@ RUN pip uninstall -y torchvision
 RUN pip install  torchvision --index-url https://download.pytorch.org/whl/cu118
 RUN pip uninstall -y torch
 RUN pip install  torch --index-url https://download.pytorch.org/whl/cu118 
-RUN pip install xformers   
+RUN pip install xformers --user 
 COPY builder/cache.py /stable-diffusion-webui/cache.py
-RUN python cache.py --use-cpu=all --ckpt model.safetensors
+RUN python3 cache.py --use-cpu=all --ckpt model.safetensors
 
 WORKDIR /stable-diffusion-webui/extensions
 
