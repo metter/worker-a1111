@@ -62,12 +62,23 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
-ARG SHA=89f9faa63388756314e8a1d96cf86bf5e0663045
-RUN --mount=type=cache,target=/root/.cache/pip \
-    cd stable-diffusion-webui && \
-    git fetch && \
-    git reset --hard ${SHA} && \
-    pip install -r requirements_versions.txt
+# Install generative models
+WORKDIR /stable-diffusion-webui/repositories
+
+RUN git clone https://github.com/Stability-AI/generative-models.git
+
+WORKDIR /stable-diffusion-webui/repositories/generative-models
+
+# Install required packages from pypi inside the virtual environment
+RUN python3 -m venv .pt2
+RUN . .pt2/bin/activate \
+    && pip3 install -r requirements/pt2.txt \
+    && pip3 install . \
+    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
+    && pip install hatch \
+    && hatch build -t wheel     
+
+WORKDIR /    
 
 ADD src .
 
