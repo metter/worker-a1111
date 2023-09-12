@@ -48,8 +48,11 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     git reset --hard 5ef669de080814067961f28357256e8fe27544f4 && \
     pip install -r requirements_versions.txt
 
+#copy from download stage
 COPY --from=download /repositories/ ${ROOT}/repositories/
-COPY --from=download /model.safetensors /model.safetensors
+COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
+COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusion/VAE/sdxl_vae.safetensors
+
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
