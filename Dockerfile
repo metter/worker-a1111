@@ -54,9 +54,6 @@ WORKDIR /stable-diffusion-webui
 RUN git reset --hard 5ef669de080814067961f28357256e8fe27544f4 && \
     pip install -r requirements_versions.txt
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
 #copy from download stage
 COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
