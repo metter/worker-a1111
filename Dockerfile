@@ -61,7 +61,7 @@ RUN pwd && ls -l
 # Install required packages from pypi inside the virtual environment
 RUN python3 -m venv .pt2
 RUN . .pt2/bin/activate \
-    && pip3 install -r requirements/pt2.txt \
+    && pip3 install -r /stable-diffusion-webui/repositories/generative-models/requirements/pt2.txt \
     && pip3 install . \
     && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
     && pip install hatch \
