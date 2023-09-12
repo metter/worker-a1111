@@ -116,7 +116,8 @@ WORKDIR /stable-diffusion-webui
 RUN pip uninstall -y torchvision
 RUN pip install  torchvision --index-url https://download.pytorch.org/whl/cu118
 RUN pip uninstall -y torch
-RUN pip install  torch --index-url https://download.pytorch.org/whl/cu118    
+RUN pip install  torch --index-url https://download.pytorch.org/whl/cu118 
+RUN pip install xformers   
 COPY builder/cache.py /stable-diffusion-webui/cache.py
 RUN python cache.py --use-cpu=all --ckpt model.safetensors
 
