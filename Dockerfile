@@ -15,7 +15,7 @@ RUN . /clone.sh CodeFormer https://github.com/sczhou/CodeFormer.git c5b4593074ba
 RUN . /clone.sh BLIP https://github.com/salesforce/BLIP.git 48211a1594f1321b00f14c9f7a5b4813144b2fb9 && \
     . /clone.sh k-diffusion https://github.com/crowsonkb/k-diffusion.git 5b3af030dd83e0297272d861c19477735d0317ec && \
     . /clone.sh clip-interrogator https://github.com/pharmapsychotic/clip-interrogator 2486589f24165c8e3b303f84e9dbbea318df83e8 \
-    . /clone.sh generative-models https://github.com/Stability-AI/generative-models.git 477d8b9a7730d9b2e92b326a770c0420d00308c9
+    . /clone.sh generative-models https://github.com/Stability-AI/generative-models 477d8b9a7730d9b2e92b326a770c0420d00308c9
 
 WORKDIR /download
 RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors 
@@ -53,19 +53,7 @@ COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors /model.safetensors
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
-
-# Install generative models
-WORKDIR /stable-diffusion-webui/repositories/generative-models
-
-# Install required packages from pypi inside the virtual environment
-RUN python3 -m venv .pt2
-RUN . .pt2/bin/activate \
-    && pip3 install -r requirements/pt2.txt \
-    && pip3 install . \
-    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
-    && pip install hatch \
-    && hatch build -t wheel        
+    pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt    
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
