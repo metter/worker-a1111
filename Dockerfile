@@ -51,7 +51,7 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git /stabl
 WORKDIR /stable-diffusion-webui
 
 # Reset to the specific commit and install requirements
-RUN git reset --hard 68f336bd994bed5442ad95bad6b6ad5564a5409a && \
+RUN git reset --hard 5ef669de080814067961f28357256e8fe27544f4 && \
     pip install -r requirements_versions.txt
 
 RUN --mount=type=cache,target=/root/.cache/pip \
