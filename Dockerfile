@@ -57,10 +57,6 @@ COPY --from=download /repositories/ ${ROOT}/repositories/
 # Install the Generative Models repository's requirements and the repository itself
 WORKDIR ${ROOT}/repositories/generative-models
 RUN --mount=type=cache,target=/root/.cache/pip \
-    python3 -m venv .pt13 \
-    && source .pt13/bin/activate \
-    && pip install -r requirements/pt13.txt
-RUN --mount=type=cache,target=/root/.cache/pip \
     python3 -m venv .pt2 \
     && source .pt2/bin/activate \
     && pip install -r requirements/pt2.txt
