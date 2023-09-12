@@ -53,7 +53,7 @@ COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
 COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusion/VAE/sdxl_vae.safetensors
 
-WORKDIR /stable-diffusion-webui
+WORKDIR ${ROOT}
 RUN python launch.py --skip-torch-cuda-test --exit
 
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
