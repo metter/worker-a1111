@@ -53,6 +53,9 @@ COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
 COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusion/VAE/sdxl_vae.safetensors
 
+WORKDIR /stable-diffusion-webui
+RUN python launch.py 
+
 # Install generative models
 WORKDIR /stable-diffusion-webui/repositories
 RUN git clone https://github.com/Stability-AI/generative-models.git
