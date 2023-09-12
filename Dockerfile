@@ -63,9 +63,7 @@ COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
 COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusion/VAE/sdxl_vae.safetensors
 
 WORKDIR /stable-diffusion-webu
-RUN python3 -m venv venv
-RUN . venv/bin/activate 
-RUN python launch.py --skip-torch-cuda-test
+RUN python launch.py --skip-torch-cuda-test --exit
 
 # Cleanup section (Worker Template)
 RUN apt-get autoremove -y && \
