@@ -99,7 +99,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
-Switch to the specified SHA
+# Switch to the specified SHA
 ARG SHA=5ef669de080814067961f28357256e8fe27544f4 
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd stable-diffusion-webui && \
