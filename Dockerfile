@@ -53,7 +53,19 @@ COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors /model.safetensors
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt    
+    pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
+
+# Install generative models
+WORKDIR /stable-diffusion-webui/repositories/generative-models
+
+# Install required packages from pypi inside the virtual environment
+RUN python3 -m venv .pt2
+RUN . .pt2/bin/activate \
+    && pip3 install -r requirements/pt2.txt \
+    && pip3 install . \
+    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
+    && pip install hatch \
+    && hatch build -t wheel        
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
