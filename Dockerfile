@@ -74,9 +74,10 @@ RUN . .pt2/bin/activate \
     && pip install hatch \
     && hatch build -t wheel     
 
-#RUN python3 -m venv venv
-#RUN . venv/bin/activate \
-#RUN python launch.py --skip-torch-cuda-test  --exit
+WORKDIR /stable-diffusion-webu
+RUN python3 -m venv venv
+RUN . venv/bin/activate \
+RUN python launch.py --skip-torch-cuda-test  --exit
 
 # Create a directory for the interrogator data and copy the files
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
