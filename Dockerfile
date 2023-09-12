@@ -14,7 +14,8 @@ RUN . /clone.sh CodeFormer https://github.com/sczhou/CodeFormer.git c5b4593074ba
 
 RUN . /clone.sh BLIP https://github.com/salesforce/BLIP.git 48211a1594f1321b00f14c9f7a5b4813144b2fb9 && \
     . /clone.sh k-diffusion https://github.com/crowsonkb/k-diffusion.git 5b3af030dd83e0297272d861c19477735d0317ec && \
-    . /clone.sh clip-interrogator https://github.com/pharmapsychotic/clip-interrogator 2486589f24165c8e3b303f84e9dbbea318df83e8
+    . /clone.sh clip-interrogator https://github.com/pharmapsychotic/clip-interrogator 2486589f24165c8e3b303f84e9dbbea318df83e8 \
+    . /clone.sh generative-models https://github.com/Stability-AI/generative-models.git 477d8b9a7730d9b2e92b326a770c0420d00308c9
 
 WORKDIR /download
 RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors 
@@ -48,15 +49,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     git reset --hard 5ef669de080814067961f28357256e8fe27544f4 && \
     pip install -r requirements_versions.txt
 
-#copy from download stage
 COPY --from=download /repositories/ ${ROOT}/repositories/
-COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
-COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusion/VAE/sdxl_vae.safetensors
-
-WORKDIR ${ROOT}/repositories/
-RUN git clone https://github.com/Stability-AI/generative-models.git
-#RUN python launch.py --skip-torch-cuda-test --exit
-
+COPY --from=download /download/model.safetensors /model.safetensors
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
@@ -67,13 +61,18 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip && \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
-    
-WORKDIR /stable-diffusion-webui
+
+ARG SHA=5ef669de080814067961f28357256e8fe27544f4
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd stable-diffusion-webui && \
+    git fetch && \
+    git reset --hard ${SHA} && \
+    pip install -r requirements_versions.txt
 
 ADD src .
 
 COPY builder/cache.py /stable-diffusion-webui/cache.py
-RUN python cache.py --use-cpu=all --ckpt model.safetensors
+RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.safetensors
 
 # Cleanup section (Worker Template)
 RUN apt-get autoremove -y && \
