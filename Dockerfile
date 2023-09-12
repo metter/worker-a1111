@@ -53,8 +53,9 @@ COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
 COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusion/VAE/sdxl_vae.safetensors
 
-WORKDIR ${ROOT}
-RUN python launch.py --skip-torch-cuda-test --exit
+WORKDIR ${ROOT}/repositories/
+RUN git clone https://github.com/Stability-AI/generative-models.git
+#RUN python launch.py --skip-torch-cuda-test --exit
 
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
 RUN --mount=type=cache,target=/root/.cache/pip \
