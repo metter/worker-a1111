@@ -56,20 +56,6 @@ COPY --from=download /download/sdxl_vae.safetensors ${ROOT}/models/Stablediffusi
 WORKDIR /stable-diffusion-webui
 RUN python launch.py --skip-torch-cuda-test --exit
 
-# Install generative models
-WORKDIR /stable-diffusion-webui/repositories
-RUN git clone https://github.com/Stability-AI/generative-models.git
-WORKDIR /stable-diffusion-webui/repositories/generative-models
-
-# Install required packages from pypi inside the virtual environment
-RUN python3 -m venv .pt2
-RUN . .pt2/bin/activate \
-    && pip3 install -r /stable-diffusion-webui/repositories/generative-models/requirements/pt2.txt \
-    && pip3 install . \
-    && pip3 install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata \
-    && pip install hatch \
-    && hatch build -t wheel   
-
 RUN mkdir ${ROOT}/interrogate && cp ${ROOT}/repositories/clip-interrogator/data/* ${ROOT}/interrogate
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
@@ -82,12 +68,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     rm /requirements.txt
     
 WORKDIR /stable-diffusion-webui
-
-ARG SHA=5ef669de080814067961f28357256e8fe27544f4
-RUN --mount=type=cache,target=/root/.cache/pip \
-    git fetch && \
-    git reset --hard ${SHA} && \
-    pip install -r requirements_versions.txt
 
 ADD src .
 
