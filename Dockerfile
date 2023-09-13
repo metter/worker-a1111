@@ -67,9 +67,8 @@ RUN pip install .
 # Install sdata for training
 RUN pip install -e git+https://github.com/Stability-AI/datapipelines.git@main#egg=sdata
 
+COPY --from=download /download/model.safetensors ${ROOT}/model.safetensors
 
-
-COPY /sd_xl_base_1.0.safetensors /model.safetensors
 RUN mkdir -p ${ROOT}/interrogate && cp -r ${ROOT}/repositories/clip-interrogator/clip_interrogator/data/. ${ROOT}/interrogate || true
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
@@ -100,10 +99,6 @@ WORKDIR /
 
 # Copy the models and embeddings directories from the host to the container
 COPY test_input.json /
-COPY models/Lora /stable-diffusion-webui/models/Lora
-COPY models/ControlNet /stable-diffusion-webui/models/ControlNet
-COPY models/openpose /stable-diffusion-webui/models/openpose
-COPY embeddings /stable-diffusion-webui/embeddings
 
 # Cleanup section (Worker Template)
 RUN apt-get autoremove -y && \
