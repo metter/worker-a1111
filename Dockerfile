@@ -24,6 +24,8 @@ RUN . /clone.sh generative-models https://github.com/Stability-AI/generative-mod
     rm -rf data assets **/*.ipynb    
 
 # RUN wget -O model.safetensors https://civitai.com/api/download/models/15236 
+WORKDIR /download
+RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors 
 
 # ---------------------------------------------------------------------------- #
 #                        Stage 3: Build the final image                        #
