@@ -40,3 +40,23 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
 
 # Launch the Python script
 RUN python3.10 stable-diffusion-webui/launch.py --skip-torch-cuda-test --ckpt stable-diffusion-webui/model.safetensors --no-half --exit
+
+# Install Python dependencies (Worker Template)
+COPY builder/requirements.txt /requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip && \
+    pip install --upgrade -r /requirements.txt --no-cache-dir && \
+    rm /requirements.txt
+
+ADD src .
+
+COPY builder/cache.py /stable-diffusion-webui/cache.py
+RUN cd /stable-diffusion-webui && python cache.py --use-cpu=all --ckpt /model.safetensors
+
+# Cleanup section (Worker Template)
+RUN apt-get autoremove -y && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN chmod +x /start.sh
+CMD /start.sh
