@@ -46,7 +46,7 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
 # Launch the Python script
-RUN python stable-diffusion-webui/launch.py --ckpt stable-diffusion-webui/model.safetensors --no-half --exit
+RUN python stable-diffusion-webui/launch.py --ckpt stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
