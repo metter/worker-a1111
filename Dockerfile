@@ -35,6 +35,15 @@ RUN pip install torch torchvision torchaudio --index-url https://download.pytorc
 RUN pip install --upgrade clip-anytorch==2.4.0 
 RUN pip install open_clip_torch
 
+#install Nvidia drivers
+RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+  && \
+    sudo apt-get update
+
+RUN sudo apt-get install -y nvidia-container-toolkit    
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
@@ -54,13 +63,9 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
 RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
 # Start webui.py in the background
-RUN python /stable-diffusion-webui/webui.py --no-half --ckpt /stable-diffusion-webui/model.safetensors --api &
-
-# Wait for 35 seconds (you can use 'sleep' command)
-RUN sleep 35
-
-# Terminate the webui.py process gracefully (send SIGTERM signal)
-RUN pkill -TERM -f "python /stable-diffusion-webui/webui.py"
+RUN python /stable-diffusion-webui/webui.py --no-half --ckpt /stable-diffusion-webui/model.safetensors --api && \
+    sleep 35 && \
+    pkill -TERM -f "python /stable-diffusion-webui/webui.py"
 
 ADD src .
 
