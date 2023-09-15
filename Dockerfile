@@ -64,8 +64,8 @@ RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/mode
 
 # Start webui.py in the background
 COPY builder/webui.sh /webui.sh
-RUN chmod +x /webui.sh
-RUN /webui.sh
+RUN chmod +x /webui.sh && /webui.sh
+RUN rm /webui.sh
 
 ADD src .
 
