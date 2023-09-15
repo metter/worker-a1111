@@ -49,6 +49,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt 
 
+RUN apt-get update && apt-get install -y python3-lzma    
+
 # Clone the repository
 RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
