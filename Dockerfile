@@ -48,6 +48,7 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
 # Launch the Python script
 RUN python stable-diffusion-webui/launch.py --ckpt stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 RUN pip install open_clip_torch
+RUN pip install --upgrade clip-anytorch==2.4.0
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
