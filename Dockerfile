@@ -1,5 +1,5 @@
 # Use the official Ubuntu base image
-FROM ubuntu:latest
+FROM nvidia/cuda:11.0-base
 
 # Set the timezone to Zurich
 RUN echo "tzdata tzdata/Areas select Europe" | debconf-set-selections && \
@@ -28,6 +28,9 @@ RUN apt-get update && \
     python3.10 --version \
     pip --version
 
+# Create symbolic links for python
+RUN ln -s /usr/local/bin/python3.10 /usr/local/bin/python
+
 # Install PyTorch
 RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
@@ -36,10 +39,11 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
     git reset --hard 5ef669de080814067961f28357256e8fe27544f4 && \
     pip install -r requirements_versions.txt && \
+    pip install xformers && \
     wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
 # Launch the Python script
-RUN python3.10 stable-diffusion-webui/launch.py --skip-torch-cuda-test --ckpt stable-diffusion-webui/model.safetensors --no-half --exit
+RUN python stable-diffusion-webui/launch.py --ckpt stable-diffusion-webui/model.safetensors --no-half --exit
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
