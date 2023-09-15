@@ -1,5 +1,5 @@
 # Use the official Ubuntu base image
-FROM nvidia/cuda:11.0-base
+FROM nvidia/cuda:12.2.0-base-ubuntu20.04
 
 # Set the timezone to Zurich
 RUN echo "tzdata tzdata/Areas select Europe" | debconf-set-selections && \
