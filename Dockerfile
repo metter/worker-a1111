@@ -63,9 +63,9 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
 RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
 # Start webui.py in the background
-RUN python /stable-diffusion-webui/webui.py --no-half --ckpt /stable-diffusion-webui/model.safetensors --api && \
-    sleep 35 && \
-    pkill -TERM -f "python /stable-diffusion-webui/webui.py"
+COPY builder/webui.sh /webui.sh
+RUN chmod +x /webui.sh
+RUN /webui.sh
 
 ADD src .
 
