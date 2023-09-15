@@ -35,6 +35,14 @@ RUN pip install torch torchvision torchaudio --index-url https://download.pytorc
 RUN pip install --upgrade clip-anytorch==2.4.0 
 RUN pip install open_clip_torch
 
+
+# Install Python dependencies (Worker Template)
+COPY builder/requirements.txt /requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip && \
+    pip install --upgrade -r /requirements.txt --no-cache-dir && \
+    rm /requirements.txt 
+
 # Clone the repository
 RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
@@ -53,13 +61,6 @@ RUN sleep 35
 
 # Terminate the webui.py process gracefully (send SIGTERM signal)
 RUN pkill -TERM -f "python /stable-diffusion-webui/webui.py"
-
-# Install Python dependencies (Worker Template)
-COPY builder/requirements.txt /requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip && \
-    pip install --upgrade -r /requirements.txt --no-cache-dir && \
-    rm /requirements.txt 
 
 ADD src .
 
