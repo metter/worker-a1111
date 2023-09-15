@@ -45,7 +45,14 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
 # Launch the Python script
 RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
-RUN timeout 35s python /stable-diffusion-webui/webui.py --no-half --ckpt /stable-diffusion-webui/model.safetensors --api
+# Start webui.py in the background
+RUN python /stable-diffusion-webui/webui.py --no-half --ckpt /stable-diffusion-webui/model.safetensors --api &
+
+# Wait for 35 seconds (you can use 'sleep' command)
+RUN sleep 35
+
+# Terminate the webui.py process gracefully (send SIGTERM signal)
+RUN pkill -TERM -f "python /stable-diffusion-webui/webui.py"
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
