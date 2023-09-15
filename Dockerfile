@@ -59,7 +59,7 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
 # Launch the Python script
 RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
-RUN apt-get update && apt-get install -y python3-lzma    
+RUN apt-get update && apt-get install -y python3-dev  
 
 # Start webui.py in the background
 RUN python /stable-diffusion-webui/webui.py --no-half --ckpt /stable-diffusion-webui/model.safetensors --api && \
