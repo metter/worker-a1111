@@ -1,10 +1,6 @@
 # Use the official Ubuntu base image
 FROM nvidia/cuda:12.2.0-base-ubuntu20.04
 
-# Set the timezone to Zurich
-RUN echo "tzdata tzdata/Areas select Europe" | debconf-set-selections && \
-    echo "tzdata tzdata/Zones/Europe select Zurich" | debconf-set-selections
-
 # Set DEBIAN_FRONTEND to noninteractive to prevent timezone prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -42,6 +38,10 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
     git reset --hard 5ef669de080814067961f28357256e8fe27544f4 && \
     pip install -r requirements_versions.txt && \
+    mkdir openai && \
+    cd openai && \
+    wget -O pytorch_model.bin https://huggingface.co/openai/clip-vit-large-patch14/resolve/main/pytorch_model.bin && \
+    cd .. && \
     pip install xformers && \
     wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
