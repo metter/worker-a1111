@@ -5,6 +5,9 @@ FROM nvidia/cuda:12.2.0-base-ubuntu20.04
 RUN echo "tzdata tzdata/Areas select Europe" | debconf-set-selections && \
     echo "tzdata tzdata/Zones/Europe select Zurich" | debconf-set-selections
 
+# Set DEBIAN_FRONTEND to noninteractive to prevent timezone prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Update package lists and install necessary packages
 RUN apt-get update && \
     apt-get install -y fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev procps libgl1-mesa-glx libglib2.0-0 && \
