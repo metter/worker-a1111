@@ -69,6 +69,9 @@ RUN rm /webui.sh
 
 ADD src .
 
+# copy embeddings
+COPY embeddings /stable-diffusion-webui/embeddings
+
 # Cleanup section (Worker Template)
 RUN apt-get autoremove -y && \
     apt-get clean -y && \
