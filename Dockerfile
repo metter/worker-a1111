@@ -43,7 +43,7 @@ RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearm
   && \
     apt-get update
 
-RUN apt-get install -y nvidia-container-toolkit    
+RUN apt-get install -y nvidia-container-toolkit liblzma-dev  
 
 # Install Python dependencies (Worker Template)
 COPY builder/requirements.txt /requirements.txt
