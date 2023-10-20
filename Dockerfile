@@ -11,21 +11,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean -y
 
-# Install build essentials and Python dependencies
+# Install Python and pip using apt
 RUN apt-get update && \
-    apt-get install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev && \
-    wget https://www.python.org/ftp/python/3.10.9/Python-3.10.9.tar.xz && \
-    tar -xf Python-3.10.9.tar.xz && \
-    cd Python-3.10.9 && \
-    ./configure --enable-optimizations && \
-    make -j$(nproc) && \
-    make altinstall && \
-    cd .. && \
-    rm -rf Python-3.10.9 Python-3.10.9.tar.xz && \
-    apt-get install -y python3-pip && \
-    ln -s /usr/local/bin/pip3.10 /usr/local/bin/pip && \
-    python3.10 --version \
-    pip --version
+    apt-get install -y python3 python3-pip
 
 # Create symbolic links for python
 RUN ln -s /usr/local/bin/python3.10 /usr/local/bin/python
