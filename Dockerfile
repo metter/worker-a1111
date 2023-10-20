@@ -31,9 +31,9 @@ RUN apt-get update && \
 RUN ln -s /usr/local/bin/python3.10 /usr/local/bin/python
 
 # Install PyTorch
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-RUN pip install --upgrade clip-anytorch==2.4.0 
-RUN pip install open_clip_torch
+# RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# RUN pip install --upgrade clip-anytorch==2.4.0 
+# RUN pip install open_clip_torch
 
 #install Nvidia drivers
 RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
