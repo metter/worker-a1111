@@ -76,10 +76,33 @@ RUN cd stable-diffusion-webui/models/VAE \
 # copy embeddings
 COPY embeddings /stable-diffusion-webui/embeddings
 
+# Download and run the Papertrail setup script
+RUN wget -qO - --header="X-Papertrail-Token: EJdyLCeu4frHUIRv" \
+    https://papertrailapp.com/destinations/37347322/setup.sh | bash
+
+# Download remote_syslog2 and setup Papertrail logging
+RUN wget https://github.com/papertrail/remote_syslog2/releases/download/v0.20/remote_syslog_linux_amd64.tar.gz && \
+    tar xzf ./remote_syslog_linux_amd64.tar.gz && \
+    cp ./remote_syslog/remote_syslog /usr/local/bin && \
+    rm -r ./remote_syslog_linux_amd64.tar.gz ./remote_syslog
+
+# Create a config file for remote_syslog
+RUN echo "/var/log/runpod_handler.log" > /etc/log_files.yml && \
+    echo "hostname: runpod" >> /etc/log_files.yml && \
+    echo "destination:" >> /etc/log_files.yml && \
+    echo "  host: logs2.papertrailapp.com" >> /etc/log_files.yml && \
+    echo "  port: 27472" >> /etc/log_files.yml && \
+    echo "  protocol: tls" >> /etc/log_files.yml
+
+# Ensure remote_syslog starts with the container
+RUN echo "#!/bin/bash" > /start.sh && \
+    echo "remote_syslog -D --pid-file=/var/run/remote_syslog.pid -c /etc/log_files.yml &" >> /start.sh && \
+    echo "set -e" >> /start.sh && \
+    chmod +x /start.sh
+    
 # Cleanup section (Worker Template)
 RUN apt-get autoremove -y && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
-RUN chmod +x /start.sh
 CMD /start.sh
