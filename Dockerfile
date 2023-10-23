@@ -92,13 +92,6 @@ RUN echo "files:" >> /etc/log_files.yml && \
 
 COPY builder/papertrail.sh /papertrail.sh    
 RUN chmod +x /papertrail.sh
-
-# Ensure remote_syslog starts with the container
-RUN echo "#!/bin/bash" > /start.sh && \
-    echo "remote_syslog -D --pid-file=/var/run/remote_syslog.pid -c /etc/log_files.yml &" >> /start.sh && \
-    echo "set -e" >> /start.sh && \
-    # Adding a command to keep the script running or handle errors might be beneficial here
-    chmod +x /start.sh
     
 # Cleanup section (Worker Template)
 RUN apt-get autoremove -y && \
