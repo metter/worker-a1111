@@ -80,7 +80,7 @@ def handler(event):
         input_data["prompt"] = txt2img_assembled_prompt
 
         # Check if 'img2txt' is True in the input data
-        if input_data.get("img2txt"):  # Using 'get' to prevent KeyError if 'img2txt' doesn't exist
+        if input_data.get("img2img"):  # Using 'get' to prevent KeyError if 'img2img' doesn't exist
             print("img2img request")
             json_response = img2img_inference(input_data)  # Make an img2img request
             print("image processed")
