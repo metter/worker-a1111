@@ -67,8 +67,6 @@ COPY builder/webui.sh /webui.sh
 RUN chmod +x /webui.sh && /webui.sh
 RUN rm /webui.sh
 
-ADD src .
-
 # get SDXL VAE
 RUN cd /stable-diffusion-webui/models/VAE && \
     wget -O sdxl_vae.safetensors https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors
@@ -89,6 +87,8 @@ RUN echo "files:" >> /etc/log_files.yml && \
     echo "  host: logs.papertrailapp.com" >> /etc/log_files.yml && \
     echo "  port: 27472" >> /etc/log_files.yml && \
     echo "  protocol: tls" >> /etc/log_files.yml
+
+ADD src .    
 
 COPY builder/papertrail.sh /papertrail.sh    
 RUN chmod +x /papertrail.sh
