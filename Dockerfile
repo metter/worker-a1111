@@ -70,7 +70,7 @@ RUN rm /webui.sh
 ADD src .
 
 # get SDXL VAE
-RUN cd /stable-diffusion-webui/models/VAE \
+RUN cd /stable-diffusion-webui/models/VAE && \
     wget -O sdxl_vae.safetensors https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors
 
 # copy embeddings
