@@ -81,7 +81,7 @@ RUN wget https://github.com/papertrail/remote_syslog2/releases/download/v0.20/re
     tar xzf ./remote_syslog*.tar.gz && \
     cp ./remote_syslog/remote_syslog /usr/local/bin/ && \
     rm -r ./remote_syslog_linux_amd64.tar.gz ./remote_syslog
-    
+
 # Create a config file for remote_syslog
 RUN echo "files:" >> /etc/log_files.yml && \
     echo "  - /var/log/runpod_handler.log" >> /etc/log_files.yml && \
@@ -105,5 +105,4 @@ RUN apt-get autoremove -y && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ["/bin/bash", "-c"]
-CMD ["/papertrail.sh && /start.sh"]
+CMD start.sh
