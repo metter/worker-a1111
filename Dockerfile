@@ -76,10 +76,6 @@ RUN cd stable-diffusion-webui/models/VAE \
 # copy embeddings
 COPY embeddings /stable-diffusion-webui/embeddings
 
-# Download and run the Papertrail setup script
-RUN wget -qO - --header="X-Papertrail-Token: EJdyLCeu4frHUIRv" \
-    https://papertrailapp.com/destinations/37347322/setup.sh | bash
-
 # Download remote_syslog2 and setup Papertrail logging
 RUN wget https://github.com/papertrail/remote_syslog2/releases/download/v0.20/remote_syslog_linux_amd64.tar.gz && \
     tar xzf ./remote_syslog_linux_amd64.tar.gz && \
@@ -98,6 +94,7 @@ RUN echo "/var/log/runpod_handler.log" > /etc/log_files.yml && \
 RUN echo "#!/bin/bash" > /start.sh && \
     echo "remote_syslog -D --pid-file=/var/run/remote_syslog.pid -c /etc/log_files.yml &" >> /start.sh && \
     echo "set -e" >> /start.sh && \
+    # Adding a command to keep the script running or handle errors might be beneficial here
     chmod +x /start.sh
     
 # Cleanup section (Worker Template)
