@@ -71,7 +71,7 @@ RUN cd /stable-diffusion-webui/extensions/sd-webui-controlnet/models && \
 
 # Launch the Python script
 RUN cd /stable-diffusion-webui && \
-    python /launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
+    python launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
 # Start webui.py in the background
 COPY builder/webui.sh /webui.sh
