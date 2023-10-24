@@ -66,7 +66,7 @@ RUN cd /stable-diffusion-webui/extensions && \
 # download controlnet models
 RUN cd /stable-diffusion-webui/extensions/sd-webui-controlnet/models && \ 
     wget https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/t2i-adapter_xl_openpose.safetensors && \
-    wget hhttps://huggingface.co/lllyasviel/sd_control_collection/resolve/main/t2i-adapter_xl_sketch.safetensors && \
+    wget https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/t2i-adapter_xl_sketch.safetensors && \
     wget https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/thibaud_xl_openpose.safetensors
 
 # Launch the Python script
