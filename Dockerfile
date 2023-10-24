@@ -69,6 +69,7 @@ RUN cd /stable-diffusion-webui/extensions/sd-webui-controlnet/models && \
     wget https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/t2i-adapter_xl_sketch.safetensors && \
     wget https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/thibaud_xl_openpose.safetensors
 
+WORKDIR /stable-diffusion-webui
 # Launch the Python script
 RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
