@@ -59,6 +59,16 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     pip install -r requirements_versions.txt && \
     wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
+# Install Controlnet Webui
+RUN cd /stable-diffusion-webui/extensions && \ 
+    git clone https://github.com/Mikubill/sd-webui-controlnet.git
+
+# download controlnet models
+RUN cd /stable-diffusion-webui/extensions/sd-webui-controlnet/models && \ 
+    wget https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/t2i-adapter_xl_openpose.safetensors && \
+    wget hhttps://huggingface.co/lllyasviel/sd_control_collection/resolve/main/t2i-adapter_xl_sketch.safetensors && \
+    wget https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/thibaud_xl_openpose.safetensors
+
 # Launch the Python script
 RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
