@@ -81,6 +81,8 @@ RUN rm /webui.sh
 # get SDXL VAE
 RUN cd /stable-diffusion-webui/models/VAE && \
     wget -O sdxl_vae.safetensors https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors
+RUN cd /stable-diffusion-webui/models/VAE-approx/ && \
+    wget -O vaeapprox-sdxl.pt https://github.com/AUTOMATIC1111/stable-diffusion-webui/releases/download/v1.0.0-pre/vaeapprox-sdxl.pt        
 
 # copy embeddings
 COPY embeddings /stable-diffusion-webui/embeddings
