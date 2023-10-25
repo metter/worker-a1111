@@ -107,7 +107,7 @@ COPY builder/papertrail.sh /papertrail.sh
 RUN chmod +x /papertrail.sh
 
 # copy test_input
-COPY /test_input.json /test_input.json 
+COPY test_input.json /test_input.json 
     
 # Cleanup section (Worker Template)
 RUN apt-get autoremove -y && \
