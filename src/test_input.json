@@ -1,20 +1,34 @@
 {
-    "input": {
-      "pos": "[frontpad][camera] shot of [prompt][backpad][lora]",
-      "frontpad": "",
-      "backpad": "",
-      "prompt": "a tall house in the middle of a forrest",
-      "height": 768,
+  "input": {
+      "id": 4,
+      "source_file_name": "",
+      "pos": "[frontpad], a [camera] shot of [prompt], [backpad]",
+      "pos_source": "charcoal on paper, candid, a medium shot of (0031_european_55_female:0.7), wearing a business outfit, walking down an office corridor with lots of papers in her hand, style by Noah Bradley, style by Benedick Bana, sketch, ink and water, (intricate details) , pen art, cinematic framing , rule of thirds, style by Posuka Demizu, watercolour, style by Erich Heckel, broad stroke, draft, charcoal art, pencil art",
+      "negative_prompt": "(multiple people), (twins), (double), (too many limbs), (deformed, distorted, disfigured:1.3), (eyes to camera), (looking at camera), (saturated) (grain) (deformed) (lowres) (lowpoly) (CG) (3d) (blurry) (out-of-focus) (depth_of_field) (duplicate) (watermark) (label) (signature) (text) (cropped) Easynegative_promptative, sexy, naked, picture in picture, frame, multiple people, off screen, (deformed, distorted, disfigured:1.3), (photo photography photograph) (cartoon) (saturated) (grain) (deformed) (poorly drawn) (sexy)",
+      "frontpad": "charcoal on paper, candid",
+      "backpad": "style by Noah Bradley, style by Benedick Bana, sketch, ink and water, (intricate details) , pen art, cinematic framing , rule of thirds, style by Posuka Demizu, watercolour, style by Erich Heckel, broad stroke, draft, charcoal art, pencil art",
+      "lora": "",
+      "sampler_name": "DPM++ 3M SDE Exponential",
+      "steps": "22",
+      "cfg_scale": "9",
       "width": 1360,
-      "camera": "wide",
-      "test": true,
-      "num_outputs": 1,
-      "steps": 28,
+      "height": 768,
+      "embedding_strength": 0.7,
       "2step": false,
-      "cfg_scale": 7.5,
-      "sampler_name": "Euler a",
-      "negative_prompt": "(deformed, distorted, disfigured:1.3), (photo photography photograph) (cartoon) (saturated) (grain) (deformed) (lowres) (lowpoly) (CG) (3d) (blurry) (out-of-focus) (depth_of_field) (duplicate) (watermark) (label) (signature) (text) (cropped) Easynegative_promptative, sexy, naked, picture in picture, frame, multiple limbs",
-      "seed": -1
-    },
-    "webhook": "http://etter.duckdns.org:1881/runpod"
-  }
+      "prompt": "A house in the prairie",
+      "seed": -1,
+      "num_outputs": 1,
+      "image_id": 1698317624210,
+      "alwayson_scripts": {
+          "controlnet": {
+              "args": [
+                  {
+                      "input_image": "data:image/png;base64,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",
+                      "model": "t2i-adapter_xl_sketch [ff9b22fb]"
+                  }
+              ]
+          }
+      }
+  },
+  "webhook": "http://etter.duckdns.org:1881/sketch"
+}
