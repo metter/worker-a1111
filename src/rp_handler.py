@@ -56,6 +56,7 @@ def handler(event):
         print("try loop started")
 
         input_data = event["input"]
+        webhook = event["webhook"]
         prompt = input_data["prompt"]
 
         # Get the assembly instructions from the "pos" field
@@ -89,7 +90,7 @@ def handler(event):
             json_response = txt2img_inference(input_data)  # Make a txt2img request
             print("image received")
 
-        print("return")
+        print(f"return image to: {webhook}")
 
         # Return the response
         return json_response
