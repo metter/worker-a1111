@@ -9,7 +9,7 @@
       "camera": "wide",
       "test": true,
       "num_outputs": 1,
-      "steps": 50,
+      "steps": 28,
       "2step": false,
       "cfg_scale": 7.5,
       "sampler_name": "Euler a",
