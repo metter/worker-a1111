@@ -3,6 +3,8 @@ import runpod
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
+LOCAL_URL = "http://127.0.0.1:3000/sdapi/v1"
+
 automatic_session = requests.Session()
 retries = Retry(total=10, backoff_factor=0.1, status_forcelist=[502, 503, 504])
 automatic_session.mount('http://', HTTPAdapter(max_retries=retries))
@@ -16,7 +18,7 @@ def wait_for_service(url):
     '''
     while True:
         try:
-            requests.get(url)
+            requests.get(url, timeout=120)
             return
         except requests.exceptions.RequestException:
             print("Service not ready yet. Retrying...")
@@ -30,7 +32,7 @@ def txt2img_inference(inference_request):
     Run inference using the txt2img API.
     '''
     print("txt2img")
-    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/txt2img',
+    response = automatic_session.post(url=f'{LOCAL_URL}/txt2img',
                                       json=inference_request, timeout=600)
     return response.json()
 
@@ -39,7 +41,7 @@ def img2img_inference(inference_request):
     Run inference using the img2img API.
     '''
     print("img2img")
-    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/img2img',
+    response = automatic_session.post(url='http://{LOCAL_URL}/sdapi/v1/img2img',
                                       json=inference_request, timeout=600)
     return response.json()
 
@@ -109,6 +111,7 @@ def handler(event):
         return error_response
 
 if __name__ == "__main__":
-    wait_for_service(url='http://127.0.0.1:3000/internal/sysinfo')
+    wait_for_service(url=f'{LOCAL_URL}/txt2img')
+
     print("WebUI API Service is ready. Starting RunPod...")
     runpod.serverless.start({"handler": handler})
