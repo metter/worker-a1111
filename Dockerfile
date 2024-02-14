@@ -76,8 +76,14 @@ WORKDIR ${ROOT}
 RUN pip install --upgrade pip && \
     pip install -r requirements_versions.txt    
 
-# Modifying the degradations.py for correct import statement
-RUN sed -i 's/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/' /usr/local/lib/python3.10/site-packages/basicsr/data/degradations.py    
+# Copy the shell script into the image
+COPY builder/modify_degradations.sh /modify_degradations.sh
+
+# Make the script executable
+RUN chmod +x /modify_degradations.sh
+
+# Execute the script
+RUN /modify_degradations.sh
 
 WORKDIR /
 
