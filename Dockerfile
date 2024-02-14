@@ -70,7 +70,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt 
 
-WORKDIR ${ROOT}
+# WORKDIR ${ROOT}
 
 # Install Python dependencies specified in requirements_versions.txt
 RUN pip install --upgrade pip && \
