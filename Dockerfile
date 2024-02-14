@@ -76,6 +76,9 @@ WORKDIR ${ROOT}
 RUN pip install --upgrade pip && \
     pip install -r requirements_versions.txt    
 
+# Modifying the degradations.py for correct import statement
+RUN sed -i 's/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/' /path/to/your/venv/lib/python3.10/site-packages/basicsr/data/degradations.py    
+
 WORKDIR /
 
 ADD src .
