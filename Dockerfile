@@ -76,14 +76,6 @@ WORKDIR ${ROOT}
 RUN pip install --upgrade pip && \
     pip install -r requirements_versions.txt    
 
-# Copy the shell script into the image
-COPY builder/modify_degradations.sh /modify_degradations.sh
-
-# Make the script executable
-RUN chmod +x /modify_degradations.sh
-
-# Execute the script
-RUN /modify_degradations.sh
 
 WORKDIR /
 
@@ -123,6 +115,15 @@ RUN chmod +x /papertrail.sh
 RUN apt-get autoremove -y && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
+
+# Copy the shell script into the image
+COPY builder/modify_degradations.sh /modify_degradations.sh
+
+# Make the script executable
+RUN chmod +x /modify_degradations.sh
+
+# Execute the script
+RUN /modify_degradations.sh    
 
 # Set permissions and specify the command to run
 RUN chmod +x /start.sh
