@@ -55,11 +55,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
     git reset --hard ${SHA}
-WORKDIR ${ROOT}
 
-# Install Python dependencies specified in requirements_versions.txt
-RUN pip install --upgrade pip && \
-    pip install -r requirements_versions.txt
 
 COPY --from=download /repositories/ ${ROOT}/repositories/
 COPY --from=download /model.safetensors /model.safetensors
@@ -73,6 +69,12 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip && \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt 
+
+WORKDIR ${ROOT}
+
+# Install Python dependencies specified in requirements_versions.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements_versions.txt    
 
 ADD src .
 
