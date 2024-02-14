@@ -74,7 +74,7 @@ ADD src .
 
 # Start webui.py in the background
 COPY builder/webui.sh /webui.sh
-RUN chmod +x /webui.sh && /webui.sh
+# RUN chmod +x /webui.sh && /webui.sh
 # RUN rm /webui.sh
 
 # get SDXL VAE
