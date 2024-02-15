@@ -58,10 +58,18 @@ RUN apt-get update && \
 # Install torch packages without cache
 RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
+# Install Python dependencies (Worker Template)
+COPY builder/requirements.txt /requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --upgrade -r /requirements.txt --no-cache-dir && \
+    rm /requirements.txt
+
 # Clone the stable-diffusion-webui repository and checkout the specific SHA
 RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git ${ROOT} && \
     cd ${ROOT} && \
     git reset --hard ${SHA}
+
+FROM build_final_image as requirements
 
 RUN echo "httpx==0.24.1" >> requirements_versions.txt && \
     pip install -r requirements_versions.txt && pip freeze > installed_packages.txt    
@@ -79,11 +87,8 @@ COPY --from=download /generative-models ${ROOT}/repositories/generative-models
 # Install Python dependencies for CodeFormer and others
 RUN pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
 
-# Install Python dependencies (Worker Template)
-COPY builder/requirements.txt /requirements.txt
-RUN pip install --upgrade pip && \
-    pip install --upgrade -r /requirements.txt --no-cache-dir && \
-    rm /requirements.txt
+# Launch the Python script
+RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
 ADD src .
 
