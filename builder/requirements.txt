@@ -2,6 +2,7 @@
 # Reccomended to lock the version number to avoid unexpected changes.
 
 runpod
+gradio
 
 opencv-python-headless
 pyngrok

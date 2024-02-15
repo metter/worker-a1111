@@ -59,7 +59,7 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
 
 # Append the desired text at the bottom of the file
 RUN echo "httpx==0.24.1" >> requirements_versions.txt && \
-    pip install -r requirements_versions.txt
+    pip install -r requirements_versions.txt && pip freeze > installed_packages.txt
 
 RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
@@ -68,8 +68,17 @@ RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/mode
 
 # Start webui.py in the background
 COPY builder/webui.sh /webui.sh
-RUN chmod +x /webui.sh && /webui.sh
-RUN rm /webui.sh
+
+WORKDIR /
+
+# Add debugging statements and execute the script
+RUN echo "Debug: Listing files in current directory:" && ls -l && \
+    echo "Debug: Listing files in /:" && ls -l / && \
+    echo "Debug: Changing permissions of webui.sh" && chmod +x webui.sh && \
+    sed -i 's/\r$//' webui.sh && \
+    echo "Debug: Executing webui.sh" && bash webui.sh && \
+    echo "Debug: Removing webui.sh" && rm webui.sh
+
 
 # get SDXL VAE
 RUN cd /stable-diffusion-webui/models/VAE && \
