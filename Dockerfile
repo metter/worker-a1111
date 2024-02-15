@@ -34,7 +34,7 @@ RUN git clone https://github.com/salesforce/BLIP.git /BLIP && \
 
 # Download the model
 RUN apk add --no-cache wget && \
-    wget -q -O /model.safetensors https://civitai.com/api/download/models/15236
+    wget -q -O /model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
 
 # ---------------------------------------------------------------------------- #
