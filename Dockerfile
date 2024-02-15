@@ -58,8 +58,8 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     git reset --hard 5ef669de080814067961f28357256e8fe27544f4 
 
 # Append the desired text at the bottom of the file
-RUN echo "httpx==0.24.1" >> requirements_versions.txt \
-    pip install -r requirements_versions.txt && 
+RUN echo "httpx==0.24.1" >> requirements_versions.txt && \
+    pip install -r requirements_versions.txt
 
 RUN wget -O model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
