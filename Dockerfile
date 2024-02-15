@@ -55,7 +55,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Clone the repository
 RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
-    git reset --hard 5ef669de080814067961f28357256e8fe27544f4 && 
+    git reset --hard 5ef669de080814067961f28357256e8fe27544f4 
 
 # Append the desired text at the bottom of the file
 RUN echo "httpx==0.24.1" >> requirements_versions.txt \
