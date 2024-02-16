@@ -52,7 +52,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Install required packages
 RUN apt-get update && \
-    apt-get install -y fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev procps libgl1 libglib2.0-0 && \
+    apt-get install -y fonts-dejavu-core rsync nano git jq moreutils aria2 wget libgoogle-perftools-dev procps libgl1 libglib2.0-0 && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
 # Install torch packages without cache
