@@ -93,10 +93,10 @@ RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/mode
 
 ADD src .
 
-# Replace cache.py functionality with direct implementation if needed
-COPY builder/cache.py ${ROOT}/cache.py
-RUN cd /${ROOT}
-RUN python ${ROOT}/cache.py --use-cpu=all --ckpt /model.safetensors
+# Replace webui.shfunctionality with direct implementation if needed
+COPY builder/webui.sh ${ROOT}/webui.sh
+# Make the script executable and run it without changing the working directory unnecessarily
+RUN chmod +x ${ROOT}/webui.sh && ${ROOT}/webui.sh
 
 # Cleanup and final setup
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
