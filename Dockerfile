@@ -72,10 +72,10 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git ${ROOT
 FROM build_final_image as requirements
 
 RUN echo "httpx==0.24.1" >> requirements_versions.txt && \
-    pip install -r requirements_versions.txt && pip freeze > installed_packages.txt    
+    pip install -r requirements_versions.txt    
 
 # Copy downloaded models and setup
-COPY --from=download /model.safetensors ${ROOT}/model.safetensors
+COPY --from=download /model.safetensors /model.safetensors
 COPY --from=download /taming-transformers ${ROOT}/repositories/taming-transformers
 COPY --from=download /stable-diffusion-stability-ai ${ROOT}/repositories/stable-diffusion-stability-ai
 COPY --from=download /CodeFormer ${ROOT}/repositories/CodeFormer
