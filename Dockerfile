@@ -96,7 +96,7 @@ ADD src .
 # Replace webui.shfunctionality with direct implementation if needed
 COPY builder/webui.sh ${ROOT}/webui.sh
 # Make the script executable and run it without changing the working directory unnecessarily
-RUN chmod +x ${ROOT}/webui.sh && ${ROOT}/webui.sh
+# RUN chmod +x ${ROOT}/webui.sh && ${ROOT}/webui.sh
 
 # Cleanup and final setup
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
