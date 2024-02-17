@@ -95,6 +95,7 @@ ADD src .
 
 # Replace cache.py functionality with direct implementation if needed
 COPY builder/cache.py ${ROOT}/cache.py
+RUN cd /${ROOT}
 RUN python ${ROOT}/cache.py --use-cpu=all --ckpt /model.safetensors
 
 # Cleanup and final setup
