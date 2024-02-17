@@ -83,3 +83,23 @@ COPY --from=download /generative-models ${ROOT}/repositories/generative-models
 
 RUN echo "httpx==0.24.1" >> ${ROOT}/requirements_versions.txt && \
     pip install -r ${ROOT}/requirements_versions.txt    
+
+
+# Install Python dependencies for CodeFormer and others
+RUN pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
+
+# Launch the Python script
+RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
+
+ADD src .
+
+# Replace cache.py functionality with direct implementation if needed
+COPY builder/cache.py ${ROOT}/cache.py
+RUN python ${ROOT}/cache.py --use-cpu=all --ckpt /model.safetensors
+
+# Cleanup and final setup
+RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+# Set permissions and specify the command to run
+RUN chmod +x /start.sh
+CMD /start.sh
