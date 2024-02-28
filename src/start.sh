@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Redirect stdout and stderr of this script to /var/log/runpod_handler.log
+exec > /var/log/runpod_handler.log 2>&1
+
 echo "Worker Initiated"
 /papertrail.sh &
 echo "papertrail initialised"
@@ -9,7 +12,3 @@ python /stable-diffusion-webui/webui.py --skip-python-version-check --skip-torch
 
 echo "Starting RunPod Handler"
 python -u /rp_handler.py
-
-
-   
-
