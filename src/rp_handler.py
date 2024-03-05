@@ -3,9 +3,23 @@ import runpod
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
+# Setup requests session with retries
 automatic_session = requests.Session()
 retries = Retry(total=10, backoff_factor=0.1, status_forcelist=[502, 503, 504])
 automatic_session.mount('http://', HTTPAdapter(max_retries=retries))
+
+# Logging functions for structured output
+def log_info(message):
+    print(f"[INFO] {message}")
+
+def log_warning(message):
+    print(f"[WARNING] {message}")
+
+def log_error(message):
+    print(f"[ERROR] {message}")
+
+def log_success(message):
+    print(f"[SUCCESS] {message}")
 
 # ---------------------------------------------------------------------------- #
 #                              Automatic Functions                             #
@@ -16,99 +30,84 @@ def wait_for_service(url):
     '''
     while True:
         try:
-            requests.get(url)
-            return
-        except requests.exceptions.RequestException:
-            print("Service not ready yet. Retrying...")
+            response = requests.get(url)
+            if response.status_code == 200:
+                log_success("Service is ready to receive requests.")
+                return
+            else:
+                log_warning("Service is up but returned a non-200 status code. Retrying...")
+        except requests.exceptions.RequestException as e:
+            log_warning(f"Service not ready yet. Retrying... Error: {e}")
         except Exception as err:
-            print("Error: ", err)
-
+            log_error(f"Unexpected error: {err}")
         time.sleep(0.2)
 
 def txt2img_inference(inference_request):
     '''
     Run inference using the txt2img API.
     '''
-    print("txt2img")
-    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/txt2img',
-                                      json=inference_request, timeout=600)
-    return response.json()
+    log_info("Initiating txt2img inference...")
+    try:
+        response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/txt2img',
+                                          json=inference_request, timeout=600)
+        if response.status_code == 200:
+            log_success("txt2img inference completed successfully.")
+            return response.json()
+        else:
+            log_error(f"Failed to complete txt2img inference. Status Code: {response.status_code}")
+            return None
+    except requests.exceptions.RequestException as e:
+        log_error(f"Request failed: {e}")
+        return None
 
 def img2img_inference(inference_request):
     '''
     Run inference using the img2img API.
     '''
-    print("img2img")
-    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/img2img',
-                                      json=inference_request, timeout=600)
-    return response.json()
+    log_info("Initiating img2img inference...")
+    try:
+        response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/img2img',
+                                          json=inference_request, timeout=600)
+        if response.status_code == 200:
+            log_success("img2img inference completed successfully.")
+            return response.json()
+        else:
+            log_error(f"Failed to complete img2img inference. Status Code: {response.status_code}")
+            return None
+    except requests.exceptions.RequestException as e:
+        log_error(f"Request failed: {e}")
+        return None
 
 # ---------------------------------------------------------------------------- #
 #                                RunPod Handler                                #
 # ---------------------------------------------------------------------------- #
 def handler(event):
     '''
-    This is the handler function that will be called by the serverless.
+    This is the handler function that will be called by the serverless framework.
     '''
-    print("Handler started:", event)
+    log_info(f"Handler started with event: {event}")
 
     try:
-        print("try loop started")
-
         input_data = event["input"]
-        prompt = input_data["prompt"]
 
-        # Get the assembly instructions from the "pos" field
-        txt2img_assembly_instructions = input_data.get("pos", "")
-
-        # Replace the placeholders in the assembly instructions with corresponding values
-        txt2img_assembled_prompt = txt2img_assembly_instructions.replace(
-            "[frontpad]", input_data.get("frontpad", "")
-        ).replace(
-            "[backpad]", input_data.get("backpad", "")
-        ).replace(
-            "[camera]", input_data.get("camera", "")
-        ).replace(
-            "[prompt]", prompt  
-        ).replace(
-            "[lora]", input_data.get("lora", "")
-        )
-
-        print("assembled_prompt:", txt2img_assembled_prompt)
-
-        # Update the input data with the assembled prompt
-        input_data["prompt"] = txt2img_assembled_prompt
-
-        # Check if 'img2txt' is True in the input data
-        if input_data.get("img2img"):  # Using 'get' to prevent KeyError if 'img2img' doesn't exist
-            print("img2img request")
-            json_response = img2img_inference(input_data)  # Make an img2img request
-            print("image processed")
+        if input_data.get("img2img"):
+            log_info("Processing img2img request...")
+            json_response = img2img_inference(input_data)
         else:
-            print("txt2img request")
-            json_response = txt2img_inference(input_data)  # Make a txt2img request
-            print("image received")
+            log_info("Processing txt2img request...")
+            json_response = txt2img_inference(input_data)
 
-        print("return")
+        if json_response:
+            log_success("Inference request processed successfully.")
+        else:
+            log_error("Failed to process inference request.")
 
-        # Return the response
         return json_response
     except Exception as e:
-        # Return a JSON error response
-        error_message = "An error occurred: " + str(e)
-        error_response = {
-            "detail": [
-                {
-                    "loc": ["handler"],
-                    "msg": error_message,
-                    "type": "handler_error"
-                }
-            ]
-        }
-        print("error:", error_message)
-        return error_response
+        error_message = f"An unexpected error occurred: {e}"
+        log_error(error_message)
+        return {"detail": [{"loc": ["handler"], "msg": error_message, "type": "handler_error"}]}
 
 if __name__ == "__main__":
     wait_for_service(url='http://127.0.0.1:3000/internal/sysinfo')
-    print("WebUI API Service is ready. Starting RunPod...")
     runpod.serverless.start({"handler": handler})
