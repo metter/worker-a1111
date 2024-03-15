@@ -56,28 +56,6 @@ def handler(event):
         print("try loop started")
 
         input_data = event["input"]
-        prompt = input_data["prompt"]
-
-        # Get the assembly instructions from the "pos" field
-        txt2img_assembly_instructions = input_data.get("pos", "")
-
-        # Replace the placeholders in the assembly instructions with corresponding values
-        txt2img_assembled_prompt = txt2img_assembly_instructions.replace(
-            "[frontpad]", input_data.get("frontpad", "")
-        ).replace(
-            "[backpad]", input_data.get("backpad", "")
-        ).replace(
-            "[camera]", input_data.get("camera", "")
-        ).replace(
-            "[prompt]", prompt  
-        ).replace(
-            "[lora]", input_data.get("lora", "")
-        )
-
-        print("assembled_prompt:", txt2img_assembled_prompt)
-
-        # Update the input data with the assembled prompt
-        input_data["prompt"] = txt2img_assembled_prompt
 
         # Check if 'img2txt' is True in the input data
         if input_data.get("img2img"):  # Using 'get' to prevent KeyError if 'img2img' doesn't exist
