@@ -2,10 +2,12 @@ import time
 import runpod
 import requests
 from requests.adapters import HTTPAdapter, Retry
+import os
 
 automatic_session = requests.Session()
 retries = Retry(total=10, backoff_factor=0.1, status_forcelist=[502, 503, 504])
 automatic_session.mount('http://', HTTPAdapter(max_retries=retries))
+pod_tier = os.getenv('Tier')
 
 # ---------------------------------------------------------------------------- #
 #                              Automatic Functions                             #
@@ -51,6 +53,7 @@ def handler(event):
     This is the handler function that will be called by the serverless.
     '''
     print("Handler started:", event)
+    print("Pod Tier:", pod_tier if pod_tier is not None else "Not set")
 
     try:
         print("try loop started")
