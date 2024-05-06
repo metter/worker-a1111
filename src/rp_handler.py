@@ -57,8 +57,42 @@ def handler(event):
 
     try:
         print("try loop started")
-
         input_data = event["input"]
+
+        # Top separator
+        print("")
+        print("--------------------------------------")
+        print("Request Details:")
+        print("--------------------------------------")
+
+        # Display the primary details of the request
+        print(f"ID: {event['id']}")
+        print(f"Status: {event['status']}")
+        print(f"Delay Time: {event['delayTime']} seconds")
+
+        # Separator for input details
+        print("")
+        print("--------------------------------------")
+        print("Input Details:")
+        print("--------------------------------------")
+
+        # Display input details
+        print(f"Prompt: {input_data['prompt']}")
+        print(f"Model: {input_data['model']}")
+        print(f"Steps: {input_data['steps']}")
+        print(f"CFG Scale: {input_data['cfg_scale']}")
+        print(f"Width x Height: {input_data['width']} x {input_data['height']}")
+        print(f"Sampler Name: {input_data['sampler_name']}")
+        print(f"2-Step: {input_data['2step']}")
+        print(f"Camera: {input_data['camera']}")
+        print(f"Monochrome: {input_data['monochrome']}")
+        print(f"Frontpad: {input_data['frontpad']}")
+        print(f"Backpad: {input_data['backpad']}")
+        print(f"Negative Prompt: {input_data['negative_prompt']}")
+
+        # End separator
+        print("")
+        print("--------------------------------------")
 
         # Check if 'img2txt' is True in the input data
         if input_data.get("img2img"):  # Using 'get' to prevent KeyError if 'img2img' doesn't exist
