@@ -88,6 +88,9 @@ RUN echo "httpx==0.24.1" >> ${ROOT}/requirements_versions.txt && \
 # Install Python dependencies for CodeFormer and others
 RUN pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
 
+
+COPY builder/vaeapprox-sdxl.pt /stable-diffusion-webui\models\VAE-approx\vaeapprox-sdxl.pt
+
 # Launch the Python script
 RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
