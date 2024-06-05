@@ -105,9 +105,7 @@ RUN echo "files:" >> /etc/log_files.yml && \
     echo "destination:" >> /etc/log_files.yml && \
     echo "  host: logs.papertrailapp.com" >> /etc/log_files.yml && \
     echo "  port: 27472" >> /etc/log_files.yml && \
-    echo "  protocol: tls" >> /etc/log_files.yml
-
-ADD src .    
+    echo "  protocol: tls" >> /etc/log_files.yml   
 
 # Replace webui.shfunctionality with direct implementation if needed
 COPY builder/webui.sh ${ROOT}/webui.sh
@@ -116,6 +114,8 @@ RUN chmod +x ${ROOT}/webui.sh && ${ROOT}/webui.sh
 
 COPY builder/papertrail.sh /papertrail.sh    
 RUN chmod +x /papertrail.sh
+
+ADD src . 
 
 # Cleanup and final setup
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
