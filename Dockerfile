@@ -1,9 +1,9 @@
-# ---------------------------------------------------------------------------- #
-#                         Stage 1: Download the models                         #
-# ---------------------------------------------------------------------------- #
-FROM alpine/git:2.36.2 as download
+# Stage 1: Download all required files and models
+FROM alpine:3.14 as downloader
 
-# Clone the repos directly and checkout specific commits
+RUN apk add --no-cache git wget
+
+# Clone repositories
 RUN git clone https://github.com/CompVis/taming-transformers.git /taming-transformers && \
     cd /taming-transformers && \
     git checkout 24268930bf1dce879235a7fddd0b2355b84d7ea6 && \
@@ -21,25 +21,30 @@ RUN git clone https://github.com/sczhou/CodeFormer.git /CodeFormer && \
 
 RUN git clone https://github.com/salesforce/BLIP.git /BLIP && \
     cd /BLIP && \
-    git checkout 48211a1594f1321b00f14c9f7a5b4813144b2fb9 && \
-    git clone https://github.com/crowsonkb/k-diffusion.git /k-diffusion && \
+    git checkout 48211a1594f1321b00f14c9f7a5b4813144b2fb9
+
+RUN git clone https://github.com/crowsonkb/k-diffusion.git /k-diffusion && \
     cd /k-diffusion && \
-    git checkout 5b3af030dd83e0297272d861c19477735d0317ec && \
-    git clone https://github.com/pharmapsychotic/clip-interrogator.git /clip-interrogator && \
+    git checkout 5b3af030dd83e0297272d861c19477735d0317ec
+
+RUN git clone https://github.com/pharmapsychotic/clip-interrogator.git /clip-interrogator && \
     cd /clip-interrogator && \
-    git checkout 2486589f24165c8e3b303f84e9dbbea318df83e8 && \
-    git clone https://github.com/Stability-AI/generative-models.git /generative-models && \
+    git checkout 2486589f24165c8e3b303f84e9dbbea318df83e8
+
+RUN git clone https://github.com/Stability-AI/generative-models.git /generative-models && \
     cd /generative-models && \
     git checkout 45c443b316737a4ab6e40413d7794a7f5657c19f
 
 # Download the model
-RUN apk add --no-cache wget && \
-    wget -q -O /model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
+RUN wget -q -O /model.safetensors https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
+# Download remote_syslog2
+RUN wget https://github.com/papertrail/remote_syslog2/releases/download/v0.20/remote_syslog_linux_amd64.tar.gz && \
+    tar xzf ./remote_syslog*.tar.gz && \
+    cp ./remote_syslog/remote_syslog /usr/local/bin/ && \
+    rm -r ./remote_syslog_linux_amd64.tar.gz ./remote_syslog
 
-# ---------------------------------------------------------------------------- #
-#                        Stage 3: Build the final image                        #
-# ---------------------------------------------------------------------------- #
+# Stage 2: Build the final image
 FROM python:3.10.9-slim as build_final_image
 
 ARG SHA=5ef669de080814067961f28357256e8fe27544f4
@@ -50,10 +55,28 @@ ENV DEBIAN_FRONTEND=noninteractive \
     ROOT=/stable-diffusion-webui \
     PYTHONUNBUFFERED=1
 
-# Install required packages
+# Install required packages and system dependencies
 RUN apt-get update && \
-    apt-get install -y fonts-dejavu-core rsync nano git jq moreutils aria2 wget libgoogle-perftools-dev procps libgl1 libglib2.0-0 && \
-    apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
+    apt-get install -y \
+    fonts-dejavu-core \
+    rsync \
+    nano \
+    git \
+    jq \
+    moreutils \
+    aria2 \
+    wget \
+    libgoogle-perftools-dev \
+    procps \
+    libgl1 \
+    libglib2.0-0 \
+    gcc \
+    g++ \
+    build-essential \
+    python3-dev && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean -y
 
 # Install torch packages without cache
 RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
@@ -69,35 +92,28 @@ RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git ${ROOT
     cd ${ROOT} && \
     git reset --hard ${SHA}
 
-FROM build_final_image as requirements
-
 # Copy downloaded models and setup
-COPY --from=download /model.safetensors /model.safetensors
-COPY --from=download /taming-transformers ${ROOT}/repositories/taming-transformers
-COPY --from=download /stable-diffusion-stability-ai ${ROOT}/repositories/stable-diffusion-stability-ai
-COPY --from=download /CodeFormer ${ROOT}/repositories/CodeFormer
-COPY --from=download /BLIP ${ROOT}/repositories/BLIP
-COPY --from=download /k-diffusion ${ROOT}/repositories/k-diffusion
-COPY --from=download /clip-interrogator ${ROOT}/repositories/clip-interrogator
-COPY --from=download /generative-models ${ROOT}/repositories/generative-models
+COPY --from=downloader /model.safetensors ${ROOT}/model.safetensors
+COPY --from=downloader /taming-transformers ${ROOT}/repositories/taming-transformers
+COPY --from=downloader /stable-diffusion-stability-ai ${ROOT}/repositories/stable-diffusion-stability-ai
+COPY --from=downloader /CodeFormer ${ROOT}/repositories/CodeFormer
+COPY --from=downloader /BLIP ${ROOT}/repositories/BLIP
+COPY --from=downloader /k-diffusion ${ROOT}/repositories/k-diffusion
+COPY --from=downloader /clip-interrogator ${ROOT}/repositories/clip-interrogator
+COPY --from=downloader /generative-models ${ROOT}/repositories/generative-models
+COPY --from=downloader /usr/local/bin/remote_syslog /usr/local/bin/remote_syslog
 
 RUN echo "httpx==0.24.1" >> ${ROOT}/requirements_versions.txt && \
     pip install -r ${ROOT}/requirements_versions.txt    
-
 
 # Install Python dependencies for CodeFormer and others
 RUN pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
 
 # Launch the Python script
-RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
+RUN python ${ROOT}/launch.py --ckpt ${ROOT}/model.safetensors --skip-torch-cuda-test --no-half --exit
 
-COPY embeddings /stable-diffusion-webui/embeddings
-
-# Download remote_syslog2
-RUN wget https://github.com/papertrail/remote_syslog2/releases/download/v0.20/remote_syslog_linux_amd64.tar.gz && \
-    tar xzf ./remote_syslog*.tar.gz && \
-    cp ./remote_syslog/remote_syslog /usr/local/bin/ && \
-    rm -r ./remote_syslog_linux_amd64.tar.gz ./remote_syslog
+COPY embeddings ${ROOT}/embeddings
+COPY loras ${ROOT}/models/Lora
 
 # Create a config file for remote_syslog
 RUN echo "files:" >> /etc/log_files.yml && \
@@ -109,7 +125,7 @@ RUN echo "files:" >> /etc/log_files.yml && \
 
 ADD src .    
 
-# Replace webui.shfunctionality with direct implementation if needed
+# Replace webui.sh functionality with direct implementation if needed
 COPY builder/webui.sh ${ROOT}/webui.sh
 # Make the script executable and run it without changing the working directory unnecessarily
 RUN chmod +x ${ROOT}/webui.sh && ${ROOT}/webui.sh
@@ -121,5 +137,6 @@ RUN chmod +x /papertrail.sh
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Set permissions and specify the command to run
+COPY start.sh /start.sh
 RUN chmod +x /start.sh
 CMD /start.sh
