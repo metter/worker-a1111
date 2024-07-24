@@ -66,9 +66,9 @@ def handler(event):
         print("--------------------------------------")
 
         # Display the primary details of the request
-        print(f"ID: {event['id']}")
-        print(f"Status: {event['status']}")
-        print(f"Delay Time: {event['delayTime']} seconds")
+        print(f"ID: {event.get('id', 'N/A')}")
+        print(f"Status: {event.get('status', 'N/A')}")
+        print(f"Delay Time: {event.get('delayTime', 'N/A')} seconds")
 
         # Separator for input details
         print("")
@@ -77,31 +77,31 @@ def handler(event):
         print("--------------------------------------")
 
         # Display input details
-        print(f"Prompt: {input_data['prompt']}")
-        print(f"Model: {input_data['model']}")
-        print(f"Steps: {input_data['steps']}")
-        print(f"CFG Scale: {input_data['cfg_scale']}")
-        print(f"Width x Height: {input_data['width']} x {input_data['height']}")
-        print(f"Sampler Name: {input_data['sampler_name']}")
-        print(f"2-Step: {input_data['2step']}")
-        print(f"Camera: {input_data['camera']}")
-        print(f"Monochrome: {input_data['monochrome']}")
-        print(f"Frontpad: {input_data['frontpad']}")
-        print(f"Backpad: {input_data['backpad']}")
-        print(f"Negative Prompt: {input_data['negative_prompt']}")
+        print(f"Prompt: {input_data.get('prompt', 'N/A')}")
+        print(f"Model: {input_data.get('model', 'N/A')}")
+        print(f"Steps: {input_data.get('steps', 'N/A')}")
+        print(f"CFG Scale: {input_data.get('cfg_scale', 'N/A')}")
+        print(f"Width x Height: {input_data.get('width', 'N/A')} x {input_data.get('height', 'N/A')}")
+        print(f"Sampler Name: {input_data.get('sampler_name', 'N/A')}")
+        print(f"2-Step: {input_data.get('2step', 'N/A')}")
+        print(f"Camera: {input_data.get('camera', 'N/A')}")
+        print(f"Monochrome: {input_data.get('monochrome', 'N/A')}")
+        print(f"Frontpad: {input_data.get('frontpad', 'N/A')}")
+        print(f"Backpad: {input_data.get('backpad', 'N/A')}")
+        print(f"Negative Prompt: {input_data.get('negative_prompt', 'N/A')}")
 
         # End separator
         print("")
         print("--------------------------------------")
 
-        # Check if 'img2txt' is True in the input data
-        if input_data.get("img2img"):  # Using 'get' to prevent KeyError if 'img2img' doesn't exist
+        # Check if 'img2img' is True in the input data
+        if input_data.get("img2img"):
             print("img2img request")
-            json_response = img2img_inference(input_data)  # Make an img2img request
+            json_response = img2img_inference(input_data)
             print("image processed")
         else:
             print("txt2img request")
-            json_response = txt2img_inference(input_data)  # Make a txt2img request
+            json_response = txt2img_inference(input_data)
             print("image received")
 
         print("return")
@@ -124,6 +124,6 @@ def handler(event):
         return error_response
 
 if __name__ == "__main__":
-    wait_for_service(url='http://127.0.0.1:3000/internal/sysinfo')
+    wait_for_service(url='http://127.0.0.1:3000/app_id')
     print("WebUI API Service is ready. Starting RunPod...")
     runpod.serverless.start({"handler": handler})

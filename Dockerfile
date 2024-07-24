@@ -82,7 +82,7 @@ RUN echo "files:" >> /etc/log_files.yml && \
 COPY builder/papertrail.sh /papertrail.sh
 RUN chmod +x /papertrail.sh
 
-COPY builder/test_input.json ${ROOT}/test_input.json
+# COPY builder/test_input.json ${ROOT}/test_input.json
 
 # Copy source files
 COPY src/ /
