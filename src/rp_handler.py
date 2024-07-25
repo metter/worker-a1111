@@ -39,7 +39,7 @@ def txt2img_inference(inference_request):
     Run inference using the txt2img API.
     '''
     print("txt2img")
-    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/txt2img',
+    response = automatic_session.post(url='http://0.0.0.0:3000/sdapi/v1/txt2img',
                                       json=inference_request, timeout=600)
     return response.json()
 
@@ -48,7 +48,7 @@ def img2img_inference(inference_request):
     Run inference using the img2img API.
     '''
     print("img2img")
-    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/img2img',
+    response = automatic_session.post(url='http://0.0.0.0:3000/sdapi/v1/img2img',
                                       json=inference_request, timeout=600)
     return response.json()
 
