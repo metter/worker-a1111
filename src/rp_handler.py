@@ -12,20 +12,27 @@ pod_tier = os.getenv('Tier')
 # ---------------------------------------------------------------------------- #
 #                              Automatic Functions                             #
 # ---------------------------------------------------------------------------- #
-def wait_for_service(url):
-    '''
-    Check if the service is ready to receive requests.
-    '''
-    while True:
-        try:
-            requests.get(url)
-            return
-        except requests.exceptions.RequestException:
-            print("Service not ready yet. Retrying...")
-        except Exception as err:
-            print("Error: ", err)
+def wait_for_service():
+    log_file = '/var/log/webui_api.log'
+    print("Waiting for service to be ready...")
+    
+    start_time = time.time()
+    timeout = 300  # 5 minutes timeout
 
-        time.sleep(0.2)
+    while True:
+        if os.path.exists(log_file):
+            with open(log_file, 'r') as f:
+                content = f.read()
+                if "Model loaded in" in content:
+                    print("Service is ready!")
+                    return
+        
+        # Check for timeout
+        if time.time() - start_time > timeout:
+            print("Timeout waiting for service to be ready")
+            return
+        
+        time.sleep(0.2)  
 
 def txt2img_inference(inference_request):
     '''
@@ -124,6 +131,6 @@ def handler(event):
         return error_response
 
 if __name__ == "__main__":
-    wait_for_service(url='http://127.0.0.1:3000/sdapi/v1/loras')
+    wait_for_service()
     print("WebUI API Service is ready. Starting RunPod...")
     runpod.serverless.start({"handler": handler})
