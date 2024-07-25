@@ -124,6 +124,6 @@ def handler(event):
         return error_response
 
 if __name__ == "__main__":
-    wait_for_service(url='http://127.0.0.1:3000/app_id')
+    wait_for_service(url='http://127.0.0.1:3000/sdapi/v1/loras')
     print("WebUI API Service is ready. Starting RunPod...")
     runpod.serverless.start({"handler": handler})

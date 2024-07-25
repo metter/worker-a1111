@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y \
     g++ \
     build-essential \
     python3-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install torch packages
@@ -86,6 +87,8 @@ RUN chmod +x /papertrail.sh
 
 # Copy source files
 COPY src/ /
+
+RUN ls -l / && cat /rp_handler.py
 
 # Set up entry point
 RUN chmod +x /start.sh
