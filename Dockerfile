@@ -81,6 +81,7 @@ COPY --from=download /k-diffusion ${ROOT}/repositories/k-diffusion
 COPY --from=download /clip-interrogator ${ROOT}/repositories/clip-interrogator
 COPY --from=download /generative-models ${ROOT}/repositories/generative-models
 
+RUN pip install --upgrade pip==23.1.2
 RUN echo "httpx==0.24.1" >> ${ROOT}/requirements_versions.txt && \
     pip install -r ${ROOT}/requirements_versions.txt    
 
@@ -92,6 +93,7 @@ RUN pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
 RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --skip-torch-cuda-test --no-half --exit
 
 COPY embeddings /stable-diffusion-webui/embeddings
+COPY loras/ /stable-diffusion-webui/models/Lora/
 
 # Download remote_syslog2
 RUN wget https://github.com/papertrail/remote_syslog2/releases/download/v0.20/remote_syslog_linux_amd64.tar.gz && \
