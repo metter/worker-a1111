@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Redirect stdout and stderr of this script to /var/log/runpod_handler.log
-exec > /var/log/runpod_handler.log 2>&1
+# exec > /var/log/runpod_handler.log 2>&1
 
 echo "Worker Initiated"
 /papertrail.sh &
