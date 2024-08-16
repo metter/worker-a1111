@@ -11,7 +11,7 @@ WORKDIR /
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt install -y \
-    fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev procps wget && \
+    fonts-dejavu-core rsync nano git jq moreutils aria2 wget libgoogle-perftools-dev procps wget && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
 # Clone the specific version of AUTOMATIC1111 Stable Diffusion WebUI
@@ -30,12 +30,23 @@ RUN pip install --upgrade pip && \
 # Set up the model
 RUN cd /stable-diffusion-webui && \
     pip install --upgrade pip && \
-    pip install --upgrade -r requirements.txt --no-cache-dir && 
+    pip install --upgrade -r requirements.txt --no-cache-dir
 
-RUN python launch.py --model /model.safetensors --exit --skip-torch-cuda-test --xformers
+# Install torch packages without cache
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121    
 
-# Expose necessary ports
-EXPOSE 3000
+RUN python /stable-diffusion-webui/launch.py --model /stable-diffusion-webui/model.safetensors --exit --skip-torch-cuda-test --xformers --no-half --reinstall-xformers
 
-# Start the application
-CMD ["python", "webui.py"]
+COPY embeddings /stable-diffusion-webui/embeddings
+COPY loras /stable-diffusion-webui/models/Lora
+ADD src . 
+
+COPY builder/papertrail.sh /papertrail.sh    
+RUN chmod +x /papertrail.sh
+
+# Cleanup and final setup
+RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+# Set permissions and specify the command to run
+RUN chmod +x /start.sh
+CMD /start.sh
