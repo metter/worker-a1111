@@ -83,7 +83,7 @@ def handler(event):
         print(f"CFG Scale: {input_data['cfg_scale']}")
         print(f"Width x Height: {input_data['width']} x {input_data['height']}")
         print(f"Sampler Name: {input_data['sampler_name']}")
-        print(f"2-Step: {input_data['2step']}")
+        # print(f"2-Step: {input_data['2step']}")
         print(f"Camera: {input_data['camera']}")
         print(f"Monochrome: {input_data['monochrome']}")
         print(f"Frontpad: {input_data['frontpad']}")
