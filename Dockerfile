@@ -47,7 +47,7 @@ RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git /stable-diffus
 
 # Download the IP-Adapter FaceID model and place it in the ControlNet models directory
 RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/models/ip-adapter-faceid-plusv2_sdxl.bin \
-    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-plusv2_sdxl.bin
+https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin
 
 
 # Launch the WebUI to finalize setup (this step installs any remaining dependencies)
@@ -56,6 +56,7 @@ RUN python /stable-diffusion-webui/launch.py --model /stable-diffusion-webui/mod
 # Copy additional resources
 COPY embeddings /stable-diffusion-webui/embeddings
 COPY loras /stable-diffusion-webui/models/Lora
+COPY characters /characters
 ADD src . 
 
 # Set up Papertrail (logging)
