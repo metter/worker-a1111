@@ -83,13 +83,44 @@ def handler(event):
         print(f"CFG Scale: {input_data['cfg_scale']}")
         print(f"Width x Height: {input_data['width']} x {input_data['height']}")
         print(f"Sampler Name: {input_data['sampler_name']}")
-        # print(f"2-Step: {input_data['2step']}")
         print(f"Camera: {input_data['camera']}")
         print(f"Monochrome: {input_data['monochrome']}")
         print(f"Frontpad: {input_data['frontpad']}")
         print(f"Backpad: {input_data['backpad']}")
         print(f"Negative Prompt: {input_data['negative_prompt']}")
 
+        # Check if 'mode' is set to 'faceid'
+        if input_data.get("mode") == "faceid":
+            print("FaceID mode detected")
+            
+            # Ensure required parameters are present
+            if "controlnet" not in input_data:
+                raise ValueError("ControlNet parameters are missing for faceid mode")
+            
+            # Add ControlNet settings to the request
+            input_data["alwayson_scripts"] = {
+                "controlnet": {
+                    "args": [
+                        {
+                            "input_image": input_data["controlnet"]["input_image"],
+                            "module": input_data["controlnet"]["module"],
+                            "model": input_data["controlnet"]["model"],
+                            "weight": input_data["controlnet"]["weight"],
+                            "mask": input_data.get("controlnet", {}).get("mask", ""),
+                            "resize_mode": input_data["controlnet"]["resize_mode"],
+                            "lowvram": input_data["controlnet"]["lowvram"],
+                            "processor_res": input_data["controlnet"]["processor_res"],
+                            "threshold_a": input_data["controlnet"]["threshold_a"],
+                            "threshold_b": input_data["controlnet"]["threshold_b"],
+                            "guidance": input_data["controlnet"]["guidance"],
+                            "guidance_start": input_data["controlnet"]["guidance_start"],
+                            "guidance_end": input_data["controlnet"]["guidance_end"],
+                            "guessmode": input_data["controlnet"]["guessmode"]
+                        }
+                    ]
+                }
+            }
+        
         # End separator
         print("")
         print("--------------------------------------")
@@ -122,8 +153,3 @@ def handler(event):
         }
         print("error:", error_message)
         return error_response
-
-if __name__ == "__main__":
-    wait_for_service(url='http://127.0.0.1:3000/internal/sysinfo')
-    print("WebUI API Service is ready. Starting RunPod...")
-    runpod.serverless.start({"handler": handler})
