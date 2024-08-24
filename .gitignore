@@ -164,3 +164,4 @@ embeddings/
 loras/
 loras/*
 *.safetensors
+characters/
