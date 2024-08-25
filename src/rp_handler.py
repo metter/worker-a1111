@@ -104,17 +104,17 @@ def handler(event):
                 "controlnet": {
                     "args": [
                         {
-                            "input_image": input_data["controlnet"]["input_image"],
+                            "image": input_data["controlnet"]["input_image"],
                             "module": input_data["controlnet"]["module"],
                             "model": input_data["controlnet"]["model"],
                             "weight": input_data["controlnet"]["weight"],
                             "mask": input_data.get("controlnet", {}).get("mask", ""),
                             "resize_mode": input_data["controlnet"]["resize_mode"],
-                            "lowvram": input_data["controlnet"]["lowvram"],
+                            "low_vram": input_data["controlnet"]["low_vram"],
                             "processor_res": input_data["controlnet"]["processor_res"],
                             "threshold_a": input_data["controlnet"]["threshold_a"],
                             "threshold_b": input_data["controlnet"]["threshold_b"],
-                            "guidance": input_data["controlnet"]["guidance"],
+                            "enabeled": True,
                             "guidance_start": input_data["controlnet"]["guidance_start"],
                             "guidance_end": input_data["controlnet"]["guidance_end"],
                             "guessmode": input_data["controlnet"]["guessmode"]

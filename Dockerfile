@@ -33,9 +33,6 @@ RUN cd /stable-diffusion-webui && \
     pip install --upgrade pip && \
     pip install --upgrade -r requirements.txt --no-cache-dir
 
-# Install torch packages without cache
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
 # Clone the ControlNet extension into the WebUI's extensions directory
 RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git /stable-diffusion-webui/extensions/sd-webui-controlnet && \
     cd /stable-diffusion-webui/extensions/sd-webui-controlnet && \
@@ -46,7 +43,7 @@ RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git /stable-diffus
     pip install --upgrade -r /stable-diffusion-webui/extensions/sd-webui-controlnet/requirements.txt --no-cache-dir
 
 # Download the IP-Adapter FaceID model and place it in the ControlNet models directory
-RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/models/ip-adapter-faceid-plusv2_sdxl.bin \
+RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/models/ip-adapter-faceid_sdxl.bin \
 https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin
 
 

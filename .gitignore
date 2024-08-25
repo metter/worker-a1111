@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+stable-diffusion-webui/
 
 # C extensions
 *.so
