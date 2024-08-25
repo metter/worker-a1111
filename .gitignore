@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 stable-diffusion-webui/
+characters/
+loras/
 
 # C extensions
 *.so
@@ -10,7 +12,7 @@ stable-diffusion-webui/
 # Distribution / packaging
 .Python
 build/
-develop-eggs/
+develop-eggs
 dist/
 downloads/
 eggs/

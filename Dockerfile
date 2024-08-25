@@ -50,10 +50,29 @@ RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git /stable-diffus
     pip install --upgrade pip && \
     pip install --upgrade -r /stable-diffusion-webui/extensions/sd-webui-controlnet/requirements.txt --no-cache-dir
 
+RUN mkdir -p /stable-diffusion-webui/models/ControlNet
+RUN mkdir -p /stable-diffusion-webui/models/Lora
+
 # Download the IP-Adapter FaceID model and place it in the ControlNet models directory
-RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/models/ip-adapter-faceid_sdxl.bin \
+RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter-plus-face_sdxl_vit-h.safetensors \
+https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors
+
+RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter_sdxl.safetensors \
+https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
+
+RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter_sdxl_vit-h.safetensors \
+https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl_vit-h.safetensors
+
+RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter_xl.pth \
+https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/ip-adapter_xl.pth
+
+
+RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter-faceid_sdxl.bin \
 https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin
 
+
+RUN wget -q -O /stable-diffusion-webui//models/Lora/ip-adapter-faceid_sdxl_lora.safetensors \
+https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl_lora.safetensors
 
 # Launch the WebUI to finalize setup (this step installs any remaining dependencies)
 RUN python /stable-diffusion-webui/launch.py --model /stable-diffusion-webui/model.safetensors --exit --skip-torch-cuda-test --xformers --no-half --reinstall-xformers
