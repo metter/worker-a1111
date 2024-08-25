@@ -68,6 +68,20 @@ COPY loras /stable-diffusion-webui/models/Lora
 COPY characters /characters
 ADD src . 
 
+# Download remote_syslog2
+RUN wget https://github.com/papertrail/remote_syslog2/releases/download/v0.20/remote_syslog_linux_amd64.tar.gz && \
+    tar xzf ./remote_syslog*.tar.gz && \
+    cp ./remote_syslog/remote_syslog /usr/local/bin/ && \
+    rm -r ./remote_syslog_linux_amd64.tar.gz ./remote_syslog
+
+# Create a config file for remote_syslog
+RUN echo "files:" >> /etc/log_files.yml && \
+    echo "  - /var/log/runpod_handler.log" >> /etc/log_files.yml && \
+    echo "destination:" >> /etc/log_files.yml && \
+    echo "  host: logs.papertrailapp.com" >> /etc/log_files.yml && \
+    echo "  port: 27472" >> /etc/log_files.yml && \
+    echo "  protocol: tls" >> /etc/log_files.yml
+
 # Set up Papertrail (logging)
 COPY builder/papertrail.sh /papertrail.sh    
 RUN chmod +x /papertrail.sh

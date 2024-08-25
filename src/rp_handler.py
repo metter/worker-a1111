@@ -8,7 +8,7 @@ import os
 automatic_session = requests.Session()
 retries = Retry(total=10, backoff_factor=0.1, status_forcelist=[502, 503, 504])
 automatic_session.mount('http://', HTTPAdapter(max_retries=retries))
-pod_tier = os.getenv('Tier')
+pod_tier = os.getenv('Tier', 'standard')
 
 # ---------------------------------------------------------------------------- #
 #                              Automatic Functions                             #
@@ -28,9 +28,9 @@ def wait_for_service(url):
             requests.get(url)
             return
         except requests.exceptions.RequestException:
-            print("Service not ready yet. Retrying...")
+            print(f"{pod_tier} - Service not ready yet. Retrying...")
         except Exception as err:
-            print("Error: ", err)
+            print(f"{pod_tier} - Error: {err}")
 
         time.sleep(0.2)
 
@@ -38,8 +38,8 @@ def txt2img_inference(inference_request):
     '''
     Run inference using the txt2img API.
     '''
-    print("txt2img")
-    print(json.dumps(inference_request, indent=4))
+    print(f"{pod_tier} - txt2img")
+    print(f"{pod_tier} - {json.dumps(inference_request, indent=4)}")
     response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/txt2img',
                                       json=inference_request, timeout=600)
     return response.json()
@@ -48,8 +48,8 @@ def img2img_inference(inference_request):
     '''
     Run inference using the img2img API.
     '''
-    print("img2img")
-    print(json.dumps(inference_request, indent=4))
+    print(f"{pod_tier} - img2img")
+    print(f"{pod_tier} - {json.dumps(inference_request, indent=4)}")
     response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/img2img',
                                       json=inference_request, timeout=600)
     return response.json()
@@ -68,36 +68,36 @@ def handler(event):
     if "controlnet" in log_event.get("input", {}) and "input_image" in log_event["input"].get("controlnet", {}):
         log_event["input"]["controlnet"]["input_image"] = truncate_string(log_event["input"]["controlnet"]["input_image"])
 
-    print("Handler started:", log_event)
-    print("Pod Tier:", pod_tier if pod_tier is not None else "Not set")
+    print(f"{pod_tier} - Handler started:", log_event)
+    print(f"{pod_tier} - Pod Tier: {pod_tier}")
 
     try:
-        print("try loop started")
+        print(f"{pod_tier} - try loop started")
         input = event.get("input", {})  # Use original event without truncation for processing
 
         # Top separator
-        print("")
-        print("--------------------------------------")
-        print("Request Details:")
-        print("--------------------------------------")
+        print(f"{pod_tier} - ")
+        print(f"{pod_tier} - --------------------------------------")
+        print(f"{pod_tier} - Request Details:")
+        print(f"{pod_tier} - --------------------------------------")
 
         # Display the primary details of the request
-        print(f"ID: {event.get('id', 'N/A')}")
-        print(f"Status: {event.get('status', 'N/A')}")
-        print(f"Delay Time: {event.get('delayTime', 'N/A')} seconds")
+        print(f"{pod_tier} - ID: {event.get('id', 'N/A')}")
+        print(f"{pod_tier} - Status: {event.get('status', 'N/A')}")
+        print(f"{pod_tier} - Delay Time: {event.get('delayTime', 'N/A')} seconds")
 
         # Separator for input details
-        print("")
-        print("--------------------------------------")
-        print("Input Details:")
-        print("--------------------------------------")
+        print(f"{pod_tier} - ")
+        print(f"{pod_tier} - --------------------------------------")
+        print(f"{pod_tier} - Input Details:")
+        print(f"{pod_tier} - --------------------------------------")
 
         # Print the input data, but with truncated input_image in the log output
-        print(json.dumps(log_event.get('input', {}), indent=4))
+        print(f"{pod_tier} - {json.dumps(log_event.get('input', {}), indent=4)}")
 
         # Check if 'faceid' mode is set
         if input.get("faceid"):
-            print("FaceID mode detected. Adding ControlNet args")
+            print(f"{pod_tier} - FaceID mode detected. Adding ControlNet args")
             
             # Add ControlNet settings to the request, if provided
             input["alwayson_scripts"] = {
@@ -123,26 +123,26 @@ def handler(event):
                 }
             }
             
-            print(json.dumps(log_event.get('input', {}), indent=4))
+            print(f"{pod_tier} - {json.dumps(log_event.get('input', {}), indent=4)}")
         
         input.pop("controlnet", None)
         # End separator
-        print("")
-        print("--------------------------------------")
+        print(f"{pod_tier} - ")
+        print(f"{pod_tier} - --------------------------------------")
 
         # Check if 'img2img' is True in the input data
         if input.get("img2img"):  # Using 'get' to prevent KeyError if 'img2img' doesn't exist
-            print("img2img request")
-            print("Payload to be sent:", json.dumps(input, indent=4))
+            print(f"{pod_tier} - img2img request")
+            print(f"{pod_tier} - Payload to be sent:", json.dumps(input, indent=4))
             json_response = img2img_inference(input)  # Make an img2img request
-            print("image processed")
+            print(f"{pod_tier} - image processed")
         else:
-            print("txt2img request")
-            print("Payload to be sent:", json.dumps(input, indent=4))
+            print(f"{pod_tier} - txt2img request")
+            print(f"{pod_tier} - Payload to be sent:", json.dumps(input, indent=4))
             json_response = txt2img_inference(input)  # Make a txt2img request
-            print("image received")
+            print(f"{pod_tier} - image received")
 
-        print("return")
+        print(f"{pod_tier} - return")
 
         # Return the response
         return json_response
@@ -158,10 +158,10 @@ def handler(event):
                 }
             ]
         }
-        print("error:", error_message)
+        print(f"{pod_tier} - error:", error_message)
         return error_response
     
 if __name__ == "__main__":
     wait_for_service(url='http://127.0.0.1:3000/internal/sysinfo')
-    print("WebUI API Service is ready. Starting RunPod...")
+    print(f"{pod_tier} - WebUI API Service is ready. Starting RunPod...")
     runpod.serverless.start({"handler": handler})
