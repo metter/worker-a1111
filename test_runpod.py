@@ -13,7 +13,6 @@ test_event = {
     "delayTime": 0,
     "input": {
         "prompt": "a man smiling to the camera",
-        "model": "stable-diffusion-v1-4",
         "steps": 15,
         "cfg_scale": 7.5,
         "width": 512,
@@ -25,7 +24,7 @@ test_event = {
         "backpad": 0,
         "negative_prompt": "low quality, bad anatomy",
         "img2img": False,
-        "mode" : "faceid",
+        "faceid" : False,
         "controlnet": {
             "input_image": base64_image_data,  # Use the base64 data from the file
             "module": "ip-adapter_face_id", 
@@ -45,8 +44,18 @@ test_event = {
     }
 }
 
+test_event2 = {
+    "input": {
+        "prompt": "a man smiling to the camera",
+        "width": 512,
+        "height": 512,
+        "sampler_name": "Euler a"
+    },
+}
+
+
 # Call the handler function with the simulated event
-response = handler(test_event)
+response = handler(test_event2)
 
 # Truncate the base64 string for display in the console
 truncated_base64_image = response["images"][0][:15] + "..." if len(response["images"][0]) > 15 else response["images"][0]

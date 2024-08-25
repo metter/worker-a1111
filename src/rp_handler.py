@@ -39,7 +39,7 @@ def txt2img_inference(inference_request):
     Run inference using the txt2img API.
     '''
     print("txt2img")
-    print(json.dumps(inference_request['input'], indent=4))
+    print(json.dumps(inference_request, indent=4))
     response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/txt2img',
                                       json=inference_request, timeout=600)
     return response.json()
@@ -49,7 +49,7 @@ def img2img_inference(inference_request):
     Run inference using the img2img API.
     '''
     print("img2img")
-    print(json.dumps(inference_request['input'], indent=4))
+    print(json.dumps(inference_request, indent=4))
     response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/img2img',
                                       json=inference_request, timeout=600)
     return response.json()
@@ -61,11 +61,11 @@ def handler(event):
     '''
     This is the handler function that will be called by the serverless.
     '''
-    wait_for_service("localhost:3000/v2/txt2img")
+    
     # Create a copy of the event for logging, with truncated input_image
     log_event = event.copy()
     
-    if "controlnet" in log_event["input"] and "input_image" in log_event["input"]["controlnet"]:
+    if "controlnet" in log_event.get("input", {}) and "input_image" in log_event["input"].get("controlnet", {}):
         log_event["input"]["controlnet"]["input_image"] = truncate_string(log_event["input"]["controlnet"]["input_image"])
 
     print("Handler started:", log_event)
@@ -73,7 +73,7 @@ def handler(event):
 
     try:
         print("try loop started")
-        input_data = event["input"]  # Use original event without truncation for processing
+        input = event.get("input", {})  # Use original event without truncation for processing
 
         # Top separator
         print("")
@@ -82,9 +82,9 @@ def handler(event):
         print("--------------------------------------")
 
         # Display the primary details of the request
-        print(f"ID: {event['id']}")
-        print(f"Status: {event['status']}")
-        print(f"Delay Time: {event['delayTime']} seconds")
+        print(f"ID: {event.get('id', 'N/A')}")
+        print(f"Status: {event.get('status', 'N/A')}")
+        print(f"Delay Time: {event.get('delayTime', 'N/A')} seconds")
 
         # Separator for input details
         print("")
@@ -93,52 +93,53 @@ def handler(event):
         print("--------------------------------------")
 
         # Print the input data, but with truncated input_image in the log output
-        print(json.dumps(log_event['input'], indent=4))
+        print(json.dumps(log_event.get('input', {}), indent=4))
 
-        # Check if 'mode' is set to 'faceid'
-        if input_data.get("mode") == "faceid":
-            print("FaceID mode detected")
+        # Check if 'faceid' mode is set
+        if input.get("faceid"):
+            print("FaceID mode detected. Adding ControlNet args")
             
-            # Ensure required parameters are present
-            if "controlnet" not in input_data:
-                raise ValueError("ControlNet parameters are missing for faceid mode")
-            
-            # Add ControlNet settings to the request
-            input_data["alwayson_scripts"] = {
+            # Add ControlNet settings to the request, if provided
+            input["alwayson_scripts"] = {
                 "controlnet": {
                     "args": [
                         {
-                            "image": input_data["controlnet"]["input_image"],
-                            "module": input_data["controlnet"]["module"],
-                            "model": input_data["controlnet"]["model"],
-                            "weight": input_data["controlnet"]["weight"],
-                            "mask": input_data.get("controlnet", {}).get("mask", ""),
-                            "resize_mode": input_data["controlnet"]["resize_mode"],
-                            "low_vram": input_data["controlnet"]["low_vram"],
-                            "processor_res": input_data["controlnet"]["processor_res"],
-                            "threshold_a": input_data["controlnet"]["threshold_a"],
-                            "threshold_b": input_data["controlnet"]["threshold_b"],
-                            "enabeled": True,
-                            "guidance_start": input_data["controlnet"]["guidance_start"],
-                            "guidance_end": input_data["controlnet"]["guidance_end"],
-                            "guessmode": input_data["controlnet"]["guessmode"]
+                            "image": input.get("controlnet", {}).get("input_image", ""),
+                            "module": input.get("controlnet", {}).get("module", ""),
+                            "model": input.get("controlnet", {}).get("model", ""),
+                            "weight": input.get("controlnet", {}).get("weight", ""),
+                            "mask": input.get("controlnet", {}).get("mask", ""),
+                            "resize_mode": input.get("controlnet", {}).get("resize_mode", ""),
+                            "low_vram": input.get("controlnet", {}).get("low_vram", False),
+                            "processor_res": input.get("controlnet", {}).get("processor_res", 512),
+                            "threshold_a": input.get("controlnet", {}).get("threshold_a", 0),
+                            "threshold_b": input.get("controlnet", {}).get("threshold_b", 0),
+                            "enabled": True,
+                            "guidance_start": input.get("controlnet", {}).get("guidance_start", 0),
+                            "guidance_end": input.get("controlnet", {}).get("guidance_end", 1),
+                            "guessmode": input.get("controlnet", {}).get("guessmode", False)
                         }
                     ]
                 }
             }
+            
+            print(json.dumps(log_event.get('input', {}), indent=4))
         
+        input.pop("controlnet", None)
         # End separator
         print("")
         print("--------------------------------------")
 
-        # Check if 'img2txt' is True in the input data
-        if input_data.get("img2img"):  # Using 'get' to prevent KeyError if 'img2img' doesn't exist
+        # Check if 'img2img' is True in the input data
+        if input.get("img2img"):  # Using 'get' to prevent KeyError if 'img2img' doesn't exist
             print("img2img request")
-            json_response = img2img_inference(input_data)  # Make an img2img request
+            print("Payload to be sent:", json.dumps(input, indent=4))
+            json_response = img2img_inference(input)  # Make an img2img request
             print("image processed")
         else:
             print("txt2img request")
-            json_response = txt2img_inference(input_data)  # Make a txt2img request
+            print("Payload to be sent:", json.dumps(input, indent=4))
+            json_response = txt2img_inference(input)  # Make a txt2img request
             print("image received")
 
         print("return")
@@ -159,3 +160,8 @@ def handler(event):
         }
         print("error:", error_message)
         return error_response
+    
+if __name__ == "__main__":
+    wait_for_service(url='http://127.0.0.1:3000/internal/sysinfo')
+    print("WebUI API Service is ready. Starting RunPod...")
+    runpod.serverless.start({"handler": handler})
