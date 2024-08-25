@@ -5,6 +5,10 @@ __pycache__/
 stable-diffusion-webui/
 characters/
 loras/
+.DS_Store
+outputs/
+outputs/*
+
 
 # C extensions
 *.so
