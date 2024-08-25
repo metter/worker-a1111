@@ -10,4 +10,4 @@ sleep 2
 # Start the WebUI API
 echo "Starting WebUI API"
 # python stable-diffusion-webui/webui.py --listen --skip-python-version-check --skip-torch-cuda-test --skip-install --ckpt stable-diffusion-webui/model.safetensors --opt-sdp-attention --disable-safe-unpickle --port 3000 --api --skip-version-check --no-hashing --no-download-sd-model --no-half --medvram --xformers &
-python stable-diffusion-webui/webui.py --listen --skip-install --ckpt stable-diffusion-webui/model.safetensors --port 3000 --api --skip-version-check --no-hashing --no-download-sd-model --no-half --medvram --xformers &
+python stable-diffusion-webui/webui.py --listen --port 3000 --api --ckpt stable-diffusion-webui/model.safetensors --no-half --medvram --xformers &
