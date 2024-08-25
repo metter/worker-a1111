@@ -5,9 +5,9 @@ import json
 import logging
 from dotenv import load_dotenv
 
-prompt = "a portrait of a man"
+prompt = "a medium shot of a clean shaven 16 year old man entering a room"
 
-style_padding = " 4k, hasselblad, hd, digital art, high quality, masterpiece"
+style_padding = " 4k, hasselblad, hd, digital art, high quality, masterpiece, vector art, digital art, pencil art, colour, sketch, ink art"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -129,16 +129,13 @@ payload2 = {
                     "enabled": True,
                     "guidance_end": 1,
                     "guidance_start": 0,
-                    "image": {
-                        "image": base64_image,
-                        "mask": ""
-                    },
+                    "image":  base64_image,
                     "input_mode": "simple",
                     "is_ui": False,
                     "loopback": False,
                     "low_vram": False,
                     "model": "ip-adapter-faceid_sdxl [59ee31a3]",
-                    "module": "ip-adapter_face_id",
+                    "module": "ip-adapter-auto",
                     "output_dir": "",
                     "pixel_perfect": True,
                     "resize_mode": "Crop and Resize",
@@ -146,22 +143,7 @@ payload2 = {
                     }
                 ]
                 }
-        },
-        "controlnet": {
-            "input_image": base64_image,
-            "module": "ip-adapter_face_id",
-            "model": "ip-adapter-faceid_sdxl [59ee31a3]",
-            "weight": 1.0,
-            "low_vram": False,
-            "processor_res": 512,
-            "threshold_a": 0.0,
-            "threshold_b": 255.0,
-            "guidance": 1.0,
-            "guidance_start": 0.0,
-            "guidance_end": 1.0,
-            "guessmode": False,
-            "resize_mode": "Scale to Fit (Inner Fit)"
-        }
+            }
         }
     }
 
