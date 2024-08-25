@@ -48,14 +48,19 @@ test_event = {
 # Call the handler function with the simulated event
 response = handler(test_event)
 
-# Print the response from the handler
-print(json.dumps(response, indent=4))
+# Truncate the base64 string for display in the console
+truncated_base64_image = response["images"][0][:15] + "..." if len(response["images"][0]) > 15 else response["images"][0]
 
-# Extract the base64 image from the response
-image_base64 = response["images"][0]
+# Print the truncated response
+truncated_response = response.copy()
+truncated_response["images"][0] = truncated_base64_image
+print(json.dumps(truncated_response, indent=4))
 
-# Decode the base64 image
-image_data = base64.b64decode(image_base64)
+# Extract the full base64 image string from the response
+full_base64_image = response["images"][0]
+
+# Decode the base64 image to save it as a file
+image_data = base64.b64decode(full_base64_image)
 
 # Save the image as a PNG file
 with open("output_image.png", "wb") as image_file:
