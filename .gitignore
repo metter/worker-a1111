@@ -164,3 +164,9 @@ embeddings/
 loras/
 loras/*
 *.safetensors
+characters/
+outputs/
+embeddings/
+*.safetensors
+stable-diffusion-webui/
+loras/
