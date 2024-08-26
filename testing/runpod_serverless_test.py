@@ -5,9 +5,9 @@ import json
 import logging
 from dotenv import load_dotenv
 
-prompt = "a medium shot of a clean shaven 16 year old man entering a room"
+prompt = "a medium shot of a clean shaven 16 year old man, wearing a white tshirt and jeans, entering a room"
 
-style_padding = " 4k, hasselblad, hd, digital art, high quality, masterpiece, vector art, digital art, pencil art, colour, sketch, ink art"
+style_padding = "(candid:1.2), 4k, hasselblad, hd, digital art, high quality, masterpiece, vector art, digital art, pencil art, colour, sketch, ink art"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -139,7 +139,7 @@ payload2 = {
                     "output_dir": "",
                     "pixel_perfect": True,
                     "resize_mode": "Crop and Resize",
-                    "weight": 1
+                    "weight": 0.5
                     }
                 ]
                 }
