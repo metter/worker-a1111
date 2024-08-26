@@ -174,3 +174,5 @@ loras/*
 characters/
 styles
 test*
+style*
+build_output.txt
