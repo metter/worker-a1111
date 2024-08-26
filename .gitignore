@@ -172,3 +172,4 @@ loras/
 loras/*
 *.safetensors
 characters/
+styles
