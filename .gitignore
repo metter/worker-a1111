@@ -173,3 +173,4 @@ loras/*
 *.safetensors
 characters/
 styles
+test*
