@@ -4,6 +4,7 @@ import runpod
 import requests
 from requests.adapters import HTTPAdapter, Retry
 import os
+import base64
 
 automatic_session = requests.Session()
 retries = Retry(total=10, backoff_factor=0.1, status_forcelist=[502, 503, 504])
@@ -54,21 +55,39 @@ def img2img_inference(inference_request):
                                       json=inference_request, timeout=600)
     return response.json()
 
+def encode_image_to_base64(character_id: str) -> str:
+    try:
+        # Define the path to the characters folder
+        characters_folder = '/characters'
+
+        # Build the file path based on the character_id
+        file_path = os.path.join(characters_folder, f'{character_id}.png')
+        print(f'Attempting to find image at path: {file_path}')
+
+        # Check if the file exists
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f'Image not found: {file_path}')
+
+        # Read the image file and encode it in base64
+        with open(file_path, 'rb') as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+        # Return the base64 string
+        return base64_image
+
+    except Exception as e:
+        # Handle potential errors and raise an appropriate exception
+        raise Exception(f'Failed to encode image for character {character_id}: {str(e)}')
+    
 # ---------------------------------------------------------------------------- #
 #                                RunPod Handler                                #
 # ---------------------------------------------------------------------------- #
 def handler(event):
     '''
     This is the handler function that will be called by the serverless.
-    '''
-    
-    # Create a copy of the event for logging, with truncated input_image
-    log_event = event.copy()
-    
-    if "controlnet" in log_event.get("input", {}) and "input_image" in log_event["input"].get("controlnet", {}):
-        log_event["input"]["controlnet"]["input_image"] = truncate_string(log_event["input"]["controlnet"]["input_image"])
+    '''     
 
-    print(f"{pod_tier} - Handler started:", log_event)
+    print(f"{pod_tier} - Handler started:\n{json.dumps(event, indent=2)}")
     print(f"{pod_tier} - Pod Tier: {pod_tier}")
 
     try:
@@ -92,43 +111,30 @@ def handler(event):
         print(f"{pod_tier} - Input Details:")
         print(f"{pod_tier} - --------------------------------------")
 
-        # Print the input data, but with truncated input_image in the log output
-        print(f"{pod_tier} - {json.dumps(log_event.get('input', {}), indent=4)}")
-
-        # Check if 'faceid' mode is set
-        if input.get("faceid"):
-            print(f"{pod_tier} - FaceID mode detected. Adding ControlNet args")
-            
-            # Add ControlNet settings to the request, if provided
-            input["alwayson_scripts"] = {
-                "controlnet": {
-                    "args": [
-                        {
-                            "image": input.get("controlnet", {}).get("input_image", ""),
-                            "module": input.get("controlnet", {}).get("module", ""),
-                            "model": input.get("controlnet", {}).get("model", ""),
-                            "weight": input.get("controlnet", {}).get("weight", ""),
-                            "mask": input.get("controlnet", {}).get("mask", ""),
-                            "resize_mode": input.get("controlnet", {}).get("resize_mode", ""),
-                            "low_vram": input.get("controlnet", {}).get("low_vram", False),
-                            "processor_res": input.get("controlnet", {}).get("processor_res", 512),
-                            "threshold_a": input.get("controlnet", {}).get("threshold_a", 0),
-                            "threshold_b": input.get("controlnet", {}).get("threshold_b", 0),
-                            "enabled": True,
-                            "guidance_start": input.get("controlnet", {}).get("guidance_start", 0),
-                            "guidance_end": input.get("controlnet", {}).get("guidance_end", 1),
-                            "guessmode": input.get("controlnet", {}).get("guessmode", False)
-                        }
-                    ]
-                }
-            }
-            
-            print(f"{pod_tier} - {json.dumps(log_event.get('input', {}), indent=4)}")
+        # Print the input data
+        print(f"{pod_tier} - {json.dumps(event.get('input', {}), indent=4)}")
         
-        input.pop("controlnet", None)
         # End separator
         print(f"{pod_tier} - ")
         print(f"{pod_tier} - --------------------------------------")
+        
+        #encode base64 
+        if (input and 
+            "alwayson_scripts" in input and 
+            "ControlNet" in input["alwayson_scripts"] and 
+            "args" in input["alwayson_scripts"]["ControlNet"] and 
+            len(input["alwayson_scripts"]["ControlNet"]["args"]) > 0):
+            print("valid controlnet request")
+            
+            controlnet_args = event["input"]["alwayson_scripts"]["ControlNet"]["args"][0]
+            if "image" in controlnet_args:
+                character_id = controlnet_args["image"]
+                try:
+                    base64_string = encode_image_to_base64(character_id)
+                    input["alwayson_scripts"]["ControlNet"]["args"][0]["image"] = base64_string
+                    print(f"{pod_tier} - Image successfully encoded to base64")
+                except Exception as e:
+                    print(f"{pod_tier} - Error encoding image: {str(e)}")
 
         # Check if 'img2img' is True in the input data
         if input.get("img2img"):  # Using 'get' to prevent KeyError if 'img2img' doesn't exist

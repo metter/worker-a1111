@@ -85,6 +85,7 @@ RUN pip install xformers==0.0.27.post2
 COPY embeddings /stable-diffusion-webui/embeddings
 COPY loras /stable-diffusion-webui/models/Lora
 COPY characters /characters
+COPY src/base64_encoder.py /base64_encoder.py
 ADD src . 
 
 # Download remote_syslog2
