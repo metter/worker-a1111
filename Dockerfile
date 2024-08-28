@@ -50,6 +50,12 @@ RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git /stable-diffus
     pip install --upgrade pip && \
     pip install --upgrade -r /stable-diffusion-webui/extensions/sd-webui-controlnet/requirements.txt --no-cache-dir
 
+# Clone the regional prompter into the WebUI's extensions directory
+RUN git clone https://github.com/hako-mikan/sd-webui-regional-prompter.git /stable-diffusion-webui/extensions/sd-webui-regional-prompter && \
+    cd /stable-diffusion-webui/extensions/sd-webui-regional-prompter && \
+    # Checkout the specific commit
+    git reset --hard 4802faca6bcc40c4d1033920e8ad9fd7542eca79 && \   
+
 RUN mkdir -p /stable-diffusion-webui/models/ControlNet
 RUN mkdir -p /stable-diffusion-webui/models/Lora
 
