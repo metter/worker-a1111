@@ -10,10 +10,15 @@ import io
 import sys
 import numpy as np
 import logging
+import os
+
+print("Script started")
+print(f"Python version: {sys.version}")
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+logger.debug(f"Current working directory: {os.getcwd()}")
 
 automatic_session = requests.Session()
 retries = Retry(total=10, backoff_factor=0.1, status_forcelist=[502, 503, 504])
@@ -38,7 +43,7 @@ def wait_for_service(url):
 def txt2img_inference(inference_request):
     logger.info(f"{pod_tier} - Starting txt2img inference")
     logger.debug(f"{pod_tier} - Inference request: {json.dumps(inference_request, indent=4)}")
-    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/txt2img',
+    response = automatic_session.post(url='http://host.docker.internal:7860/sdapi/v1/txt2img',
                                       json=inference_request, timeout=600)
     logger.info(f"{pod_tier} - txt2img inference completed")
     return response.json()
@@ -46,14 +51,18 @@ def txt2img_inference(inference_request):
 def img2img_inference(inference_request):
     logger.info(f"{pod_tier} - Starting img2img inference")
     logger.debug(f"{pod_tier} - Inference request: {json.dumps(inference_request, indent=4)}")
-    response = automatic_session.post(url='http://127.0.0.1:3000/sdapi/v1/img2img',
+    response = automatic_session.post(url='http://host.docker.internal:7860/sdapi/v1/img2img',
                                       json=inference_request, timeout=600)
     logger.info(f"{pod_tier} - img2img inference completed")
     return response.json()
 
 def encode_image_to_base64(character_id: str) -> str:
     try:
-        characters_folder = '/characters'
+        # Use a relative path from the script's location
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        repo_root = os.path.dirname(script_dir)
+        characters_folder = os.path.join(repo_root, 'characters')
+        
         file_path = os.path.join(characters_folder, f'{character_id}.png')
         logger.info(f'Attempting to find image at path: {file_path}')
 
@@ -70,52 +79,25 @@ def encode_image_to_base64(character_id: str) -> str:
         logger.error(f'Failed to encode image for character {character_id}: {str(e)}')
         raise
 
-def generate_mask(width, height, regions):
-    """
-    Generate masks for given regions. Each region is defined by a tuple of fractions 
-    that specify how the region is divided horizontally and vertically.
-
-    Args:
-        width (int): The width of the image.
-        height (int): The height of the image.
-        regions (list of tuples): Each tuple defines a region with (x_start, x_end, y_start, y_end) fractions.
-                                  Fractions are relative to the full width and height (0 to 1).
-
-    Returns:
-        list: A list of base64 encoded PNG images of the masks.
-        
-    # Example usage:
-    width, height = 1024, 768
-    regions = [
-        (0, 1, 0, 0.33),   # Top third
-        (0, 0.5, 0.33, 1), # Bottom left half
-        (0.5, 1, 0.33, 1)  # Bottom right half
-    ]
-
-    masks = generate_mask(width, height, regions)    
-    """
+def generate_mask(width, height, divisions):
     masks = []
-
-    for i, region in enumerate(regions):
-        x_start, x_end, y_start, y_end = region
-        
-        mask = Image.new('RGB', (width, height), color=(0, 0, 0))  # Initialize a black mask
+    cumulative = 0
+    for i, fraction in enumerate(divisions):
+        mask = Image.new('RGB', (width, height), color=(0, 0, 0))
         draw = ImageDraw.Draw(mask)
+        left = int(cumulative * width)
+        right = int((cumulative + fraction) * width)
+        draw.rectangle([left, 0, right, height], fill=(255, 255, 255))
         
-        # Convert fractional coordinates to pixel values
-        left = int(x_start * width)
-        right = int(x_end * width)
-        top = int(y_start * height)
-        bottom = int(y_end * height)
-        
-        # Draw the region as a white rectangle on the mask
-        draw.rectangle([left, top, right, bottom], fill=(255, 255, 255))  # White rectangle
-        
-        # Save the mask as a PNG image in memory and encode it in base64
         buffered = io.BytesIO()
         mask.save(buffered, format="PNG")
         mask_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
         masks.append(mask_base64)
+        
+        logger.debug(f"Mask {i} base64 length: {len(mask_base64)}")
+        logger.debug(f"Mask {i} base64 snippet: {mask_base64[:50]}...")  # First 50 characters
+        
+        cumulative += fraction
     
     return masks
 
@@ -157,6 +139,8 @@ def handler(event):
                         logger.info(f"Image successfully encoded to base64 for ControlNet arg {i}")
                     except Exception as e:
                         logger.error(f"Error encoding image for ControlNet arg {i}: {str(e)}")
+                logger.debug(f"ControlNet arg {i} image base64 length: {len(controlnet_args.get('image', ''))}")
+                logger.debug(f"ControlNet arg {i} effective_region_mask base64 length: {len(controlnet_args.get('effective_region_mask', ''))}")        
 
         if input.get("img2img"):
             logger.info(f"{pod_tier} - Processing img2img request")
@@ -194,15 +178,20 @@ def test_mask_generation():
     logger.info(f"Generated {len(masks)} test masks and saved as .base64 files.")
 
 if __name__ == "__main__":
+    print("Entered main block")
     if len(sys.argv) > 1 and sys.argv[1] == "--test":
+        print("Running test_mask_generation")
         test_mask_generation()
     elif len(sys.argv) > 1 and sys.argv[1] == "--test_input":
+        print("Running with test input")
         if len(sys.argv) > 2:
-            test_input = json.loads(sys.argv[2])
+            with open(sys.argv[2], 'r') as f:
+                test_input = json.load(f)
             handler({"input": test_input})
         else:
-            logger.error("No test input provided")
+            print("No test input provided")
     else:
-        wait_for_service(url='http://127.0.0.1:3000/internal/sysinfo')
-        logger.info(f"{pod_tier} - WebUI API Service is ready. Starting RunPod...")
+        print("Starting normal execution")
+        wait_for_service(url='http://host.docker.internal:7860/internal/sysinfo')
+        print("Service ready, starting RunPod")
         runpod.serverless.start({"handler": handler})
