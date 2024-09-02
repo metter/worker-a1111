@@ -4,52 +4,70 @@ FROM runpod/pytorch:3.10-2.0.0-117 as downloader
 # Use bash shell with pipefail option
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Set the working directory for downloading
-WORKDIR /downloads
-
 # Install necessary tools for downloading files
 RUN apt-get update && \
     apt-get install -y wget git && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
-# Clone the ComfyUI repository and specific custom nodes
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
-    cd ComfyUI && \
+# Create the required directories for models and custom nodes
+RUN mkdir -p /downloads/models/checkpoints /downloads/models/controlnet /downloads/custom_nodes
+
+# Set the working directory for downloading
+WORKDIR /downloads    
+
+# Clone the ComfyUI repository and reset to a specific commit
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git /downloads/ComfyUI && \
+    cd /downloads/ComfyUI && \
     git reset --hard f1c2301697cb1cd538f8d4190741935548bb6734
 
-RUN git clone https://github.com/Fannovel16/comfyui_controlnet_aux && \
-    cd comfyui_controlnet_aux && \
+# Clone the custom nodes repositories
+WORKDIR /downloads/custom_nodes
+
+RUN git clone https://github.com/Fannovel16/comfyui_controlnet_aux /downloads/custom_nodes/comfyui_controlnet_aux && \
+    cd /downloads/custom_nodes/comfyui_controlnet_aux && \
     git reset --hard df91818a3c5bd5126998a2b76c8e5d3081fc37d7
 
-RUN git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet && \
-    cd ComfyUI-Advanced-ControlNet && \
+RUN git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet /downloads/custom_nodes/comfyui_advanced_controlnet && \
+    cd /downloads/custom_nodes/comfyui_advanced_controlnet && \
     git reset --hard 74d0c56ab3ba69663281390cc1b2072107939f96
 
-RUN git clone https://github.com/Acly/comfyui-tooling-nodes.git && \
-    cd comfyui-tooling-nodes && \
+RUN git clone https://github.com/Acly/comfyui-tooling-nodes.git /downloads/custom_nodes/comfyui_tooling_nodes && \
+    cd /downloads/custom_nodes/comfyui_tooling_nodes && \
     git reset --hard f986f6a44275023aa816f73a9329374c4350e729  
 
-RUN git clone https://github.com/lldacing/comfyui-easyapi-nodes.git && \
-    cd comfyui-easyapi-nodes && \
+RUN git clone https://github.com/lldacing/comfyui-easyapi-nodes.git /downloads/custom_nodes/comfyui_easyapi_nodes && \
+    cd /downloads/custom_nodes/comfyui_easyapi_nodes && \
     git reset --hard c11ff7751659b03b9b1442e5f41d41f7b3ccd85f     
 
 # Download the required models
-RUN wget -q -O /downloads/ip-adapter-plus-face_sdxl_vit-h.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors && \
-    wget -q -O /downloads/ip-adapter_sdxl.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors && \
-    wget -q -O /downloads/ip-adapter_sdxl_vit-h.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl_vit-h.safetensors && \
-    wget -q -O /downloads/ip-adapter_xl.pth \
-    https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/ip-adapter_xl.pth && \
-    wget -q -O /downloads/ip-adapter-faceid_sdxl.bin \
-    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin && \
-    wget -q -O /downloads/ip-adapter-faceid_sdxl_lora.safetensors \
-    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl_lora.safetensors && \
-    wget -q -O /downloads/controlnet-openpose-sdxl-1.0.safetensors \
-    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/resolve/main/diffusion_pytorch_model.safetensors && \
-    wget -q -O /downloads/controlnet-openpose-sdxl-1.0_twins.safetensors \
-    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/resolve/main/diffusion_pytorch_model_twins.safetensors
+WORKDIR /downloads/models
+
+RUN wget -q -O /downloads/models/checkpoints/sd_xl_base_1.0.safetensors \
+    https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
+
+RUN wget -q -O /downloads/models/controlnet/ip-adapter-plus-face_sdxl_vit-h.safetensors \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors
+
+RUN wget -q -O /downloads/models/controlnet/ip-adapter_sdxl.safetensors \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
+
+RUN wget -q -O /downloads/models/controlnet/ip-adapter_sdxl_vit-h.safetensors \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl_vit-h.safetensors
+
+RUN wget -q -O /downloads/models/controlnet/ip-adapter_xl.pth \
+    https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/ip-adapter_xl.pth
+
+RUN wget -q -O /downloads/models/controlnet/ip-adapter-faceid_sdxl.bin \
+    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin
+
+RUN wget -q -O /downloads/models/controlnet/ip-adapter-faceid_sdxl_lora.safetensors \
+    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl_lora.safetensors
+
+RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0.safetensors \
+    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model.safetensors
+
+RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0_twins.safetensors \
+    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model_twins.safetensors
 
 
 # Stage 2: Final Setup Stage
@@ -63,10 +81,10 @@ WORKDIR /
 
 # Copy files from the downloader stage
 COPY --from=downloader /downloads/ComfyUI /ComfyUI
-COPY --from=downloader /downloads /ComfyUI/models
+COPY --from=downloader /downloads/models /ComfyUI/models
 
 # Copy all custom nodes
-COPY --from=downloader /downloads/* /ComfyUI/custom_nodes/
+COPY --from=downloader /downloads/custom_nodes /ComfyUI/custom_nodes
 
 # Install system dependencies
 RUN apt-get update && \
@@ -90,7 +108,7 @@ RUN cd /ComfyUI/custom_nodes/comfyui_controlnet_aux && \
     pip install --upgrade -r requirements.txt --no-cache-dir  
 
 # Install dependencies for comfyui-easyapi-nodes
-RUN cd /ComfyUI/custom_nodes/comfyui-easyapi-nodes && \
+RUN cd /ComfyUI/custom_nodes/comfyui_easyapi_nodes && \
     pip install --upgrade -r requirements.txt --no-cache-dir     
 
 # Copy the dryrun.sh script into the container
@@ -100,7 +118,7 @@ RUN /ComfyUI/dryrun.sh
 
 # Copy additional resources
 COPY embeddings /ComfyUI/models/embeddings
-COPY loras /ConfyUI/models/loras
+COPY loras /ComfyUI/models/loras
 COPY characters /characters
 COPY src/base64_encoder.py /base64_encoder.py
 ADD src . 
