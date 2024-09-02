@@ -6,9 +6,6 @@ stable-diffusion-webui/
 characters/
 loras/
 .DS_Store
-outputs/
-outputs/*
-
 
 # C extensions
 *.so
@@ -173,6 +170,5 @@ loras/*
 *.safetensors
 characters/
 styles
-test*
 style*
 build_output.txt
