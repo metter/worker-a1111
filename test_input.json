@@ -1,0 +1,73 @@
+{
+    "input": {
+      "id": "68",
+      "pos": "[lora], [frontpad], a [camera] shot, of [prompt] in [scene_description], [backpad]",
+      "negative_prompt": "(photo:1.2), photographic, (twins), (double), (too many limbs), (deformed, distorted, disfigured:1.3), (eyes to camera), (looking at camera), (saturated) (grain) (deformed) (lowres) (lowpoly) (CG) (3d) (blurry) (out-of-focus) (depth_of_field) (duplicate) (watermark) (label) (signature) (text) (cropped) Easynegative_promptative, sexy, naked, picture in picture, frame, multiple people, off screen, (deformed, distorted, disfigured:1.3), (photo photography photograph) (saturated) (grain) (deformed) (poorly drawn) (sexy)",
+      "frontpad": "A colour cinematic storyboard, sketch, drawing, colour",
+      "backpad": "Cinematic, Digital Art, Watercolor, Sketching, Detailed, pixlineart, ",
+      "lora": "fresh_ideas_2",
+      "sampler_name": "Euler a",
+      "steps": "28",
+      "cfg_scale": "7",
+      "width": "1568",
+      "height": "768",
+      "model": "sd_xl_base_1.0",
+      "camera": "medium",
+      "embedding_strength": 0.8,
+      "prompt": "<lora:fresh_ideas_2:0.7>, A colour cinematic storyboard, sketch, drawing, colour, a medium shot of (A weathered 65-year-old black man with a short afro hairstyle in dark gray, and no glasses.:0.8), wearing a white baker's apron over a plaid shirt, (in a village square:0.7), standing behind a stall, waving at (A 30-year-old north korean woman with a slender body type and dark shoulder-length hair.:0.8), with [freshly baked goods] displayed in front of him  Cinematic, Digital Art, Watercolor, Sketching, Detailed, pixlineart,  (candid:1.3), rule of thirds, (cinematic composition1:1), dynamic, movie, XCYP Sunshine Illustration, <lora:ip-adapter-faceid_sdxl_lora:0.5>",
+      "monochrome": false,
+      "seed": -1,
+      "division": [
+        0.3,
+        0.7
+      ],
+      "alwayson_scripts": {
+        "ControlNet": {
+          "args": [
+            {
+              "type": "faceid",
+              "image": "0073_asian_30_female",
+              "effective_region_mask": "",
+              "module": "ip-adapter-auto",
+              "model": "ip-adapter-faceid_sdxl [59ee31a3]",
+              "weight": 1.5,
+              "processor_res": 512,
+              "threshold_a": 0,
+              "threshold_b": 255,
+              "guidance_start": 0,
+              "guidance_end": 1,
+              "guessmode": false,
+              "control_mode": "My prompt is more important",
+              "enabled": true,
+              "pixel_perfect": false,
+              "resize_mode": "Crop and Resize",
+              "is_ui": false,
+              "loopback": false,
+              "low_vram": true
+            },
+            {
+              "type": "faceid",
+              "image": "0035_black_65_male",
+              "effective_region_mask": "",
+              "module": "ip-adapter-auto",
+              "model": "ip-adapter-faceid_sdxl [59ee31a3]",
+              "weight": 1.5,
+              "processor_res": 512,
+              "threshold_a": 0,
+              "threshold_b": 255,
+              "guidance_start": 0,
+              "guidance_end": 1,
+              "guessmode": false,
+              "control_mode": "My prompt is more important",
+              "enabled": false,
+              "pixel_perfect": false,
+              "resize_mode": "Crop and Resize",
+              "is_ui": false,
+              "loopback": false,
+              "low_vram": true
+            }
+          ]
+        }
+      }
+    }
+  }
