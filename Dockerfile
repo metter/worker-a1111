@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
 # Create the required directories for models and custom nodes
-RUN mkdir -p /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/clip_vision /downloads/custom_nodes
+RUN mkdir -p /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
 
 # Set the working directory for downloading
 WORKDIR /downloads    
@@ -37,7 +37,15 @@ RUN git clone https://github.com/Acly/comfyui-tooling-nodes.git /downloads/custo
 
 RUN git clone https://github.com/lldacing/comfyui-easyapi-nodes.git /downloads/custom_nodes/comfyui_easyapi_nodes && \
     cd /downloads/custom_nodes/comfyui_easyapi_nodes && \
-    git reset --hard c11ff7751659b03b9b1442e5f41d41f7b3ccd85f     
+    git reset --hard c11ff7751659b03b9b1442e5f41d41f7b3ccd85f
+    
+RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle.git /downloads/custom_nodes/ComfyUI_LayerStyle && \
+    cd /downloads/custom_nodes/ComfyUI_LayerStyle && \
+    git reset --hard acaf210abbbdca1d897bf1f07931fdb100abe55c    
+    
+RUN git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus.git /downloads/custom_nodes/ComfyUI_IPAdapter_plus && \
+    cd /downloads/custom_nodes/ComfyUI_IPAdapter_plus && \
+    git reset --hard 88a71407c545e4eb0f223294f5b56302ef8696f3    
 
 # Download the required models
 WORKDIR /downloads/models
@@ -45,22 +53,22 @@ WORKDIR /downloads/models
 RUN wget -q -O /downloads/models/checkpoints/sd_xl_base_1.0.safetensors \
     https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
-RUN wget -q -O /downloads/models/controlnet/ip-adapter-plus-face_sdxl_vit-h.safetensors \
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter-plus-face_sdxl_vit-h.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors
 
-RUN wget -q -O /downloads/models/controlnet/ip-adapter_sdxl.safetensors \
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter_sdxl.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
 
-RUN wget -q -O /downloads/models/controlnet/ip-adapter_sdxl_vit-h.safetensors \
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter_sdxl_vit-h.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl_vit-h.safetensors
 
-RUN wget -q -O /downloads/models/controlnet/ip-adapter_xl.pth \
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter_xl.pth \
     https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/ip-adapter_xl.pth
 
-RUN wget -q -O /downloads/models/controlnet/ip-adapter-faceid_sdxl.bin \
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter-faceid_sdxl.bin \
     https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin
 
-RUN wget -q -O /downloads/models/controlnet/ip-adapter-faceid_sdxl_lora.safetensors \
+RUN wget -q -O /downloads/models/loras/ip-adapter-faceid_sdxl_lora.safetensors \
     https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl_lora.safetensors
 
 RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0.safetensors \
@@ -112,7 +120,11 @@ RUN cd /ComfyUI/custom_nodes/comfyui_controlnet_aux && \
 
 # Install dependencies for comfyui-easyapi-nodes
 RUN cd /ComfyUI/custom_nodes/comfyui_easyapi_nodes && \
-    pip install --upgrade -r requirements.txt --no-cache-dir     
+    pip install --upgrade -r requirements.txt --no-cache-dir   
+    
+# Install dependencies for ComfyUI_LayerStyle
+RUN cd /ComfyUI/custom_nodes/ComfyUI_LayerStyle && \
+    pip install --upgrade -r requirements.txt --no-cache-dir    
 
 # Copy the dryrun.sh script into the container
 COPY builder/dryrun.sh /ComfyUI/dryrun.sh
