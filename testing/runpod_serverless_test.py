@@ -44,7 +44,7 @@ payload = {
 }
 
 # Log the payload (excluding the workflow details for brevity)
-logging.info("Sending request with workflow")
+logging.info("Sending request: " + json.dumps(payload, indent=2))
 
 # Send the payload
 response = requests.post(url, headers=headers, json=payload)

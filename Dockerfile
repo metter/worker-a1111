@@ -69,6 +69,9 @@ RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0.safeten
 RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0_twins.safetensors \
     https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model_twins.safetensors
 
+RUN wget -q -O /downloads/models/controlnet/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors   
+
 
 # Stage 2: Final Setup Stage
 FROM runpod/pytorch:3.10-2.0.0-117
