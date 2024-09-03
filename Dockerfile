@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
 # Create the required directories for models and custom nodes
-RUN mkdir -p /downloads/models/checkpoints /downloads/models/controlnet /downloads/custom_nodes
+RUN mkdir -p /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/clip_vision /downloads/custom_nodes
 
 # Set the working directory for downloading
 WORKDIR /downloads    
@@ -69,7 +69,7 @@ RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0.safeten
 RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0_twins.safetensors \
     https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model_twins.safetensors
 
-RUN wget -q -O /downloads/models/controlnet/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors \
+RUN wget -q -O /downloads/models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors   
 
 
