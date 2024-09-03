@@ -1,5 +1,5 @@
 # Stage 1: Downloading Stage
-FROM runpod/pytorch:3.10-2.0.0-117 as downloader
+FROM runpod/pytorch:3.10-2.0.0-117 AS downloader
 
 # Use bash shell with pipefail option
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
 # Create the required directories for models and custom nodes
-RUN mkdir -p /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
+RUN mkdir -p /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
 
 # Set the working directory for downloading
 WORKDIR /downloads    
@@ -18,7 +18,44 @@ WORKDIR /downloads
 # Clone the ComfyUI repository and reset to a specific commit
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /downloads/ComfyUI && \
     cd /downloads/ComfyUI && \
-    git reset --hard f1c2301697cb1cd538f8d4190741935548bb6734
+    git reset --hard f1c2301697cb1cd538f8d4190741935548bb6734  
+
+# Download the required models
+WORKDIR /downloads/models
+
+RUN wget -q -O /downloads/models/checkpoints/sd_xl_base_1.0.safetensors \
+    https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
+
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter-plus-face_sdxl_vit-h.safetensors \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors
+
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter-plus_sdxl_vit-h.safetensors \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors
+
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter_sdxl.safetensors \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
+
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter_sdxl_vit-h.safetensors \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl_vit-h.safetensors
+
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter-faceid_sdxl.bin \
+    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin
+
+RUN wget -q -O /downloads/models/ipadapter/ip-adapter-faceid-plusv2_sdxl.bin \
+    https://huggingface.co/h94/IP-Adapter-FaceID/blob/main/ip-adapter-faceid-plusv2_sdxl.bin
+
+RUN wget -q -O /downloads/models/loras/ip-adapter-faceid_sdxl_lora.safetensors \
+    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl_lora.safetensors
+
+RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0.safetensors \
+    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model.safetensors
+
+RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0_twins.safetensors \
+    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model_twins.safetensors
+
+RUN wget -q -O /downloads/models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors   
+
 
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
@@ -39,48 +76,14 @@ RUN git clone https://github.com/lldacing/comfyui-easyapi-nodes.git /downloads/c
     cd /downloads/custom_nodes/comfyui_easyapi_nodes && \
     git reset --hard c11ff7751659b03b9b1442e5f41d41f7b3ccd85f
     
-RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle.git /downloads/custom_nodes/ComfyUI_LayerStyle && \
-    cd /downloads/custom_nodes/ComfyUI_LayerStyle && \
-    git reset --hard acaf210abbbdca1d897bf1f07931fdb100abe55c    
+# RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle.git /downloads/custom_nodes/ComfyUI_LayerStyle && \
+#    cd /downloads/custom_nodes/ComfyUI_LayerStyle && \
+#    git reset --hard acaf210abbbdca1d897bf1f07931fdb100abe55c    
     
 RUN git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus.git /downloads/custom_nodes/ComfyUI_IPAdapter_plus && \
     cd /downloads/custom_nodes/ComfyUI_IPAdapter_plus && \
-    git reset --hard 88a71407c545e4eb0f223294f5b56302ef8696f3    
-
-# Download the required models
-WORKDIR /downloads/models
-
-RUN wget -q -O /downloads/models/checkpoints/sd_xl_base_1.0.safetensors \
-    https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
-
-RUN wget -q -O /downloads/models/ipadapter/ip-adapter-plus-face_sdxl_vit-h.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors
-
-RUN wget -q -O /downloads/models/ipadapter/ip-adapter_sdxl.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
-
-RUN wget -q -O /downloads/models/ipadapter/ip-adapter_sdxl_vit-h.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl_vit-h.safetensors
-
-RUN wget -q -O /downloads/models/ipadapter/ip-adapter_xl.pth \
-    https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/ip-adapter_xl.pth
-
-RUN wget -q -O /downloads/models/ipadapter/ip-adapter-faceid_sdxl.bin \
-    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin
-
-RUN wget -q -O /downloads/models/loras/ip-adapter-faceid_sdxl_lora.safetensors \
-    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl_lora.safetensors
-
-RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0.safetensors \
-    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model.safetensors
-
-RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0_twins.safetensors \
-    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model_twins.safetensors
-
-RUN wget -q -O /downloads/models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors   
-
-
+    git reset --hard 88a71407c545e4eb0f223294f5b56302ef8696f3  
+        
 # Stage 2: Final Setup Stage
 FROM runpod/pytorch:3.10-2.0.0-117
 
@@ -123,8 +126,8 @@ RUN cd /ComfyUI/custom_nodes/comfyui_easyapi_nodes && \
     pip install --upgrade -r requirements.txt --no-cache-dir   
     
 # Install dependencies for ComfyUI_LayerStyle
-RUN cd /ComfyUI/custom_nodes/ComfyUI_LayerStyle && \
-    pip install --upgrade -r requirements.txt --no-cache-dir    
+# RUN cd /ComfyUI/custom_nodes/ComfyUI_LayerStyle && \
+#    pip install --upgrade -r requirements.txt --no-cache-dir    
 
 # Copy the dryrun.sh script into the container
 COPY builder/dryrun.sh /ComfyUI/dryrun.sh
