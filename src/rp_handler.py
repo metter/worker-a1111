@@ -12,13 +12,57 @@ import numpy as np
 import logging
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+log_file_path = "/var/log/runpod_handler.log"
+log_format = '%(asctime)s - %(levelname)s - %(message)s'
+
+# Create handlers
+file_handler = logging.FileHandler(log_file_path)
+console_handler = logging.StreamHandler()
+
+# Set log level for both handlers
+file_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.INFO)
+
+# Create a logging format
+formatter = logging.Formatter(log_format)
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+# Get the logger instance and set the level
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Add both handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 automatic_session = requests.Session()
 retries = Retry(total=10, backoff_factor=0.1, status_forcelist=[502, 503, 504])
 automatic_session.mount('http://', HTTPAdapter(max_retries=retries))
 pod_tier = os.getenv('Tier', 'standard')
+
+def send_slack_notification(message):
+    webhook_url = 'https://hooks.slack.com/services/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' 
+    payload = {"text": message}
+    
+    response = requests.post(webhook_url, json=payload)
+    
+    if response.status_code != 200:
+        logger.error(f"Slack notification failed: {response.text}")
+        raise ValueError(f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}")
+
+def monitor_logs_for_oom():
+    log_file_path = "/var/log/runpod_handler.log"  
+
+    with open(log_file_path, 'r') as log_file:
+        log_file.seek(0, os.SEEK_END)  
+        while True:
+            line = log_file.readline()
+            if "OutOfMemoryError" in line:
+                logger.info(f"{pod_tier} - Detected OutOfMemoryError in logs")
+                send_slack_notification(f"{pod_tier} - OutOfMemoryError detected in logs: {line.strip()}")
+            time.sleep(1)  
+
 
 def truncate_string(s, max_length=15):
     return (s[:max_length] + '...') if len(s) > max_length else s
