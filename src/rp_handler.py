@@ -45,6 +45,24 @@ def send_slack_notification(message):
     webhook_url = 'https://hooks.slack.com/services/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' 
     payload = {"text": message}
     
+    # Fetch the necessary environment variables
+    pod_id = os.getenv('RUNPOD_POD_ID', 'Unknown Pod ID')
+    dc_id = os.getenv('RUNPOD_DC_ID', 'Unknown Data Center ID')
+    cuda_version = os.getenv('CUDA_VERSION', 'Unknown CUDA Version')
+    pytorch_version = os.getenv('PYTORCH_VERSION', 'Unknown PyTorch Version')
+    
+    # Create the nicely formatted message payload
+    payload = {
+        "text": (
+            f"*RunPod Worker Info*\n"
+            f"• *Pod ID:* `{pod_id}`\n"
+            f"• *Data Center ID:* `{dc_id}`\n"
+            f"• *CUDA Version:* `{cuda_version}`\n"
+            f"• *PyTorch Version:* `{pytorch_version}`\n\n"
+            f"*Message:* {message}"
+        )
+    }
+    
     response = requests.post(webhook_url, json=payload)
     
     if response.status_code != 200:
@@ -60,7 +78,7 @@ def monitor_logs_for_oom():
             line = log_file.readline()
             if "OutOfMemoryError" in line:
                 logger.info(f"{pod_tier} - Detected OutOfMemoryError in logs")
-                send_slack_notification(f"{pod_tier} - OutOfMemoryError detected in logs: {line.strip()}")
+                send_slack_notification(f"{pod_tier} - OutOfMemoryError detected during image generation: {line.strip()}")
             time.sleep(1)  
 
 
