@@ -1,19 +1,14 @@
 # Stage 1: Downloading Stage
-FROM runpod/pytorch:3.10-2.0.0-117 AS downloader
-
-# Use bash shell with pipefail option
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+FROM alpine:3.18 AS downloader
 
 # Install necessary tools for downloading files
-RUN apt-get update && \
-    apt-get install -y wget git && \
-    apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
+RUN apk add --no-cache bash git wget
 
 # Create the required directories for models and custom nodes
 RUN mkdir -p /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
 
 # Set the working directory for downloading
-WORKDIR /downloads    
+WORKDIR /downloads   
 
 # Clone the ComfyUI repository and reset to a specific commit
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /downloads/ComfyUI && \
@@ -56,7 +51,6 @@ RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0_twins.s
 RUN wget -q -O /downloads/models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors   
 
-
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
 
@@ -76,13 +70,37 @@ RUN git clone https://github.com/lldacing/comfyui-easyapi-nodes.git /downloads/c
     cd /downloads/custom_nodes/comfyui_easyapi_nodes && \
     git reset --hard c11ff7751659b03b9b1442e5f41d41f7b3ccd85f
     
-# RUN git clone https://github.com/chflame163/ComfyUI_LayerStyle.git /downloads/custom_nodes/ComfyUI_LayerStyle && \
-#    cd /downloads/custom_nodes/ComfyUI_LayerStyle && \
-#    git reset --hard acaf210abbbdca1d897bf1f07931fdb100abe55c    
+RUN git clone https://github.com/nullquant/ComfyUI-BrushNet.git /downloads/custom_nodes/ComfyUI-BrushNet && \
+    cd /downloads/custom_nodes/ComfyUI-BrushNet && \
+    git reset --hard a510effde1ba9df8324f80bb5fc684b5a62792d4    
     
 RUN git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus.git /downloads/custom_nodes/ComfyUI_IPAdapter_plus && \
     cd /downloads/custom_nodes/ComfyUI_IPAdapter_plus && \
     git reset --hard 88a71407c545e4eb0f223294f5b56302ef8696f3  
+
+RUN git clone https://github.com/twri/sdxl_prompt_styler.git /downloads/custom_nodes/sdxl_prompt_styler && \
+    cd /downloads/custom_nodes/sdxl_prompt_styler && \
+    git reset --hard 51068179927f79dce14f38c6b1984390ab242be2 
+
+RUN git clone https://github.com/alessandrozonta/ComfyUI-OpenPose.git /downloads/custom_nodes/ComfyUI-OpenPose && \
+    cd /downloads/custom_nodes/ComfyUI-OpenPose && \
+    git reset --hard 8bc6c07576408a6baa5263fb432f69d1d279ef39
+
+RUN git clone https://github.com/rgthree/rgthree-comfy.git /downloads/custom_nodes/rgthree-comfy && \
+    cd /downloads/custom_nodes/rgthree-comfy && \
+    git reset --hard 98f7a0524bb052a4a65844a69b61c9e8afb592ea
+
+RUN git clone https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git /downloads/custom_nodes/ComfyUI_Comfyroll_CustomNodes && \
+    cd /downloads/custom_nodes/ComfyUI_Comfyroll_CustomNodes && \
+    git reset --hard d78b780ae43fcf8c6b7c6505e6ffb4584281ceca
+
+RUN git clone https://github.com/BlenderNeko/ComfyUI_ADV_CLIP_emb.git /downloads/custom_nodes/ComfyUI_ADV_CLIP_emb && \
+    cd /downloads/custom_nodes/ComfyUI_ADV_CLIP_emb && \
+    git reset --hard 63984deefb005da1ba90a1175e21d91040da38ab
+
+RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git /downloads/custom_nodes/ComfyUI-Impact-Pack && \
+    cd /downloads/custom_nodes/ComfyUI-Impact-Pack && \
+    git reset --hard fd6957097796d0e33092645fc56171b8dc007466
         
 # Stage 2: Final Setup Stage
 FROM runpod/pytorch:3.10-2.0.0-117
@@ -125,10 +143,22 @@ RUN cd /ComfyUI/custom_nodes/comfyui_controlnet_aux && \
 RUN cd /ComfyUI/custom_nodes/comfyui_easyapi_nodes && \
     pip install --upgrade -r requirements.txt --no-cache-dir   
     
-# Install dependencies for ComfyUI_LayerStyle
-# RUN cd /ComfyUI/custom_nodes/ComfyUI_LayerStyle && \
-#    pip install --upgrade -r requirements.txt --no-cache-dir    
+# Install dependencies for ComfyUI-BrushNet
+RUN cd /ComfyUI/custom_nodes/ComfyUI-BrushNet && \
+   pip install --upgrade -r requirements.txt --no-cache-dir    
 
+# Install dependencies for ComfyUI-OpenPose
+RUN cd /ComfyUI/custom_nodes/ComfyUI-OpenPose && \
+   pip install --upgrade -r requirements.txt --no-cache-dir    
+
+# Install dependencies for rgthree-comfy
+RUN cd /ComfyUI/custom_nodes/rgthree-comfy && \
+   pip install --upgrade -r requirements.txt --no-cache-dir    
+
+# Install dependencies for ComfyUI-Impact-Pack
+RUN cd /ComfyUI/custom_nodes/ComfyUI-Impact-Pack && \
+   pip install --upgrade -r requirements.txt --no-cache-dir    
+   
 # Copy the dryrun.sh script into the container
 COPY builder/dryrun.sh /ComfyUI/dryrun.sh
 RUN chmod +x /ComfyUI/dryrun.sh
@@ -139,6 +169,8 @@ COPY embeddings /ComfyUI/models/embeddings
 COPY loras /ComfyUI/models/loras
 COPY characters /characters
 COPY src/base64_encoder.py /base64_encoder.py
+COPY models/inpaint /ComfyUI/models/inpaint
+COPY models/clip /ComfyUI/models/clip
 ADD src . 
 
 # Download and install remote_syslog2

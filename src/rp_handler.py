@@ -82,6 +82,7 @@ def queue_prompt(workflow):
     logger.debug(f"Response from ComfyUI: {response.text}")
     
     result = response.json()
+    logger.info(f"Queue prompt response: {json.dumps(response.json(), indent=2)}")
     if 'prompt_id' not in result:
         raise KeyError(f"Expected 'prompt_id' in response, got: {result}")
     
@@ -154,6 +155,7 @@ def process_output_images(outputs):
 
 def handler(event):
     logger.info("Handler started")
+    logger.info(f"Received event: {json.dumps(event, indent=2)}")
     try:
         input_data = event["input"]
         logger.info(f"Processing input: {json.dumps(input_data, indent=2)}")
