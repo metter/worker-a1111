@@ -57,8 +57,8 @@ RUN wget -q -O /downloads/models/controlnet/OpenPoseXL2.safetensors  \
 RUN wget -q -O /downloads/models/grounding-dino/groundingdino_swinb_cogcoor.pth \
     https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swinb_cogcoor.pth 
 
-RUN wget -q -O /downloads/models/sams/sam2_hiera_large.pt \
-    https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_large.pt 
+RUN wget -q -O /downloads/models/sams/sam_vit_b_01ec64.pth  \
+https://huggingface.co/datasets/Gourieff/ReActor/resolve/main/models/sams/sam_vit_b_01ec64.pth 
 
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
