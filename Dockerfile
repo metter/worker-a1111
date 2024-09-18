@@ -5,7 +5,7 @@ FROM alpine:3.18 AS downloader
 RUN apk add --no-cache bash git wget
 
 # Create the required directories for models and custom nodes
-RUN mkdir -p /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
+RUN mkdir -p /downloads/models/sams /downloads/models/grounding-dino /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
 
 # Set the working directory for downloading
 WORKDIR /downloads   
@@ -50,6 +50,15 @@ RUN wget -q -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0_twins.s
 
 RUN wget -q -O /downloads/models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors   
+
+RUN wget -q -O /downloads/models/controlnet/OpenPoseXL2.safetensors  \
+    https://huggingface.co/thibaud/controlnet-openpose-sdxl-1.0/resolve/main/OpenPoseXL2.safetensors 
+    
+RUN wget -q -O /downloads/models/grounding-dino/groundingdino_swinb_cogcoor.pth \
+    https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swinb_cogcoor.pth 
+
+RUN wget -q -O /downloads/models/sams/sam2_hiera_large.pt \
+    https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_large.pt 
 
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
@@ -101,6 +110,10 @@ RUN git clone https://github.com/BlenderNeko/ComfyUI_ADV_CLIP_emb.git /downloads
 RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git /downloads/custom_nodes/ComfyUI-Impact-Pack && \
     cd /downloads/custom_nodes/ComfyUI-Impact-Pack && \
     git reset --hard fd6957097796d0e33092645fc56171b8dc007466
+
+RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2.git /downloads/custom_nodes/ComfyUI-SAM2 && \
+    cd /downloads/custom_nodes/ComfyUI-SAM2 && \
+    git reset --hard 61a97f2fe8094a1da48b4313394a1e18b529cccf    
         
 # Stage 2: Final Setup Stage
 FROM runpod/pytorch:3.10-2.0.0-117
@@ -158,6 +171,10 @@ RUN cd /ComfyUI/custom_nodes/rgthree-comfy && \
 # Install dependencies for ComfyUI-Impact-Pack
 RUN cd /ComfyUI/custom_nodes/ComfyUI-Impact-Pack && \
    pip install --upgrade -r requirements.txt --no-cache-dir    
+
+# Install dependencies for ComfyUI-SAM2
+RUN cd /ComfyUI/custom_nodes/ComfyUI-SAM2 && \
+   pip install --upgrade -r requirements.txt --no-cache-dir     
    
 # Copy the dryrun.sh script into the container
 COPY builder/dryrun.sh /ComfyUI/dryrun.sh
