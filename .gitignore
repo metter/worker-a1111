@@ -6,6 +6,9 @@ stable-diffusion-webui/
 characters/
 loras/
 .DS_Store
+*.pth
+*.bin
+*.safetensors
 
 # C extensions
 *.so
