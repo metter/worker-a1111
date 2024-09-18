@@ -57,8 +57,8 @@ RUN wget -q -O /downloads/models/controlnet/OpenPoseXL2.safetensors  \
 RUN wget -q -O /downloads/models/grounding-dino/groundingdino_swinb_cogcoor.pth \
     https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swinb_cogcoor.pth 
 
-RUN wget -q -O /downloads/models/sams/sam_vit_b_01ec64.pth  \
-https://huggingface.co/datasets/Gourieff/ReActor/resolve/main/models/sams/sam_vit_b_01ec64.pth 
+RUN wget -q -O /downloads/models/sams/sam_vit_h_4b8939.pth \
+https://huggingface.co/datasets/Gourieff/ReActor/resolve/main/models/sams/sam_vit_h_4b8939.pth
 
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
@@ -111,9 +111,9 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git /downloads/cus
     cd /downloads/custom_nodes/ComfyUI-Impact-Pack && \
     git reset --hard fd6957097796d0e33092645fc56171b8dc007466
 
-RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2.git /downloads/custom_nodes/ComfyUI-SAM2 && \
-    cd /downloads/custom_nodes/ComfyUI-SAM2 && \
-    git reset --hard 61a97f2fe8094a1da48b4313394a1e18b529cccf    
+RUN git clone https://github.com/storyicon/comfyui_segment_anything.git /downloads/custom_nodes/comfyui_segment_anything && \
+    cd /downloads/custom_nodes/comfyui_segment_anything && \
+    git reset --hard ab6395596399d5048639cdab7e44ec9fae857a93    
         
 # Stage 2: Final Setup Stage
 FROM runpod/pytorch:3.10-2.0.0-117
@@ -172,8 +172,8 @@ RUN cd /ComfyUI/custom_nodes/rgthree-comfy && \
 RUN cd /ComfyUI/custom_nodes/ComfyUI-Impact-Pack && \
    pip install --upgrade -r requirements.txt --no-cache-dir    
 
-# Install dependencies for ComfyUI-SAM2
-RUN cd /ComfyUI/custom_nodes/ComfyUI-SAM2 && \
+# Install dependencies for comfyui_segment_anything
+RUN cd /ComfyUI/custom_nodes/comfyui_segment_anything && \
    pip install --upgrade -r requirements.txt --no-cache-dir     
    
 # Copy the dryrun.sh script into the container
