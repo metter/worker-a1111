@@ -58,7 +58,7 @@ RUN wget -q -O /downloads/models/grounding-dino/groundingdino_swinb_cogcoor.pth 
     https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swinb_cogcoor.pth 
 
 RUN wget -q -O /downloads/models/sams/sam_vit_h_4b8939.pth \
-https://huggingface.co/datasets/Gourieff/ReActor/resolve/main/models/sams/sam_vit_h_4b8939.pth
+    https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
