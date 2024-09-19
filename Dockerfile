@@ -59,6 +59,9 @@ RUN wget -q -O /downloads/models/grounding-dino/groundingdino_swinb_cogcoor.pth 
 
 RUN wget -q -O /downloads/models/sams/sam_vit_h_4b8939.pth \
     https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+    
+RUN wget -q -O /downloads/models/checkpoints/dreamshaperXL_v21TurboDPMSDE.safetensors \
+    https://huggingface.co/AI2lab/SDXL-Models/resolve/main/dreamshaperXL_v21TurboDPMSDE.safetensors
 
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
