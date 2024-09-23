@@ -51,25 +51,6 @@ def img2img_inference(inference_request):
     logger.info(f"{pod_tier} - img2img inference completed")
     return response.json()
 
-def encode_image_to_base64(character_id: str) -> str:
-    try:
-        characters_folder = '/characters'
-        file_path = os.path.join(characters_folder, f'{character_id}.png')
-        logger.info(f'Attempting to find image at path: {file_path}')
-
-        if not os.path.isfile(file_path):
-            raise FileNotFoundError(f'Image not found: {file_path}')
-
-        with open(file_path, 'rb') as image_file:
-            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
-
-        logger.info(f'Successfully encoded image for {character_id}')
-        return base64_image
-
-    except Exception as e:
-        logger.error(f'Failed to encode image for character {character_id}: {str(e)}')
-        raise
-
 def generate_mask(width, height, divisions):
     masks = []
     cumulative = 0
@@ -103,30 +84,24 @@ def handler(event):
             "ControlNet" in input["alwayson_scripts"] and 
             "args" in input["alwayson_scripts"]["ControlNet"] and 
             len(input["alwayson_scripts"]["ControlNet"]["args"]) > 0):
-            
+
             logger.info("Valid ControlNet request detected")
-            
+
             if "division" in input:
                 divisions = input["division"]
                 width = int(input.get("width", 1360))
                 height = int(input.get("height", 768))
-                
+
                 masks = generate_mask(width, height, divisions)
-                
+
                 for i, args in enumerate(input["alwayson_scripts"]["ControlNet"]["args"]):
                     if i < len(masks):
                         args["effective_region_mask"] = masks[i]
                         logger.info(f"Assigned mask to ControlNet arg {i}")
-            
+
             for i, controlnet_args in enumerate(input["alwayson_scripts"]["ControlNet"]["args"]):
                 if "image" in controlnet_args:
-                    character_id = controlnet_args["image"]
-                    try:
-                        base64_string = encode_image_to_base64(character_id)
-                        input["alwayson_scripts"]["ControlNet"]["args"][i]["image"] = base64_string
-                        logger.info(f"Image successfully encoded to base64 for ControlNet arg {i}")
-                    except Exception as e:
-                        logger.error(f"Error encoding image for ControlNet arg {i}: {str(e)}")
+                    logger.info(f"Using provided base64-encoded image for ControlNet arg {i}")
 
         if input.get("img2img"):
             logger.info(f"{pod_tier} - Processing img2img request")
@@ -137,7 +112,7 @@ def handler(event):
 
         logger.info(f"{pod_tier} - Processing completed")
         return json_response
-    
+
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         logger.error(error_message)
