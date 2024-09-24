@@ -51,7 +51,7 @@ RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git /stable-diffus
     pip install --upgrade -r /stable-diffusion-webui/extensions/sd-webui-controlnet/requirements.txt --no-cache-dir
 
 RUN mkdir -p /stable-diffusion-webui/models/ControlNet
-RUN mkdir -p /stable-diffusion-webui/models/Lora
+RUN mkdir -p /stable-diffusion-webui/models/Lora /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/clip_vision /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/insightface/models/buffalo_l
 
 # Download the IP-Adapter FaceID model and place it in the ControlNet models directory
 RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter-plus-face_sdxl_vit-h.safetensors \
@@ -84,6 +84,24 @@ https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/resolve/main/diffusio
 
 RUN wget -q -O /stable-diffusion-webui//models/ControlNet/controlnet-openpose-sdxl-1.0_twins.safetensors \
 https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/resolve/main/diffusion_pytorch_model_twins.safetensors
+
+RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/clip_vision/clip_h.pth \
+https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/pytorch_model.bin
+
+RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/insightface/models/buffalo_l/1k3d68.onnx \
+https://huggingface.co/public-data/insightface/resolve/main/models/buffalo_l/1k3d68.onnx
+
+RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/insightface/models/buffalo_l/2d106det.onnx \
+https://huggingface.co/public-data/insightface/resolve/main/models/buffalo_l/2d106det.onnx
+
+RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/insightface/models/buffalo_l/det_10g.onnx \
+https://huggingface.co/public-data/insightface/resolve/main/models/buffalo_l/det_10g.onnx
+
+RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/insightface/models/buffalo_l/genderage.onnx \
+https://huggingface.co/public-data/insightface/resolve/main/models/buffalo_l/genderage.onnx
+
+RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/insightface/models/buffalo_l/w600k_r50.onnx \
+https://huggingface.co/public-data/insightface/resolve/main/models/buffalo_l/w600k_r50.onnx
 
 # Launch the WebUI to finalize setup (this step installs any remaining dependencies)
 RUN python /stable-diffusion-webui/launch.py --model /stable-diffusion-webui/model.safetensors --exit --skip-torch-cuda-test --xformers --no-half --reinstall-xformers
