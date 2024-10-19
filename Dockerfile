@@ -63,6 +63,15 @@ RUN wget -q -O /downloads/models/sams/sam_vit_h_4b8939.pth \
 RUN wget -q -O /downloads/models/checkpoints/dreamshaperXL_v21TurboDPMSDE.safetensors \
     https://huggingface.co/AI2lab/SDXL-Models/resolve/main/dreamshaperXL_v21TurboDPMSDE.safetensors
 
+RUN wget -q -O /downloads/models/sam2/sam2_hiera_tiny.pt \
+    https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_tiny.pt
+
+RUN wget -q -O /downloads/models/grounding-dino/GroundingDINO_SwinT_OGC.cfg.py \
+    https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/GroundingDINO_SwinT_OGC.cfg.py
+
+RUN wget -q -O /downloads/models/grounding-dino/groundingdino_swint_ogc.pth \
+    https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swint_ogc.pth
+
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
 
