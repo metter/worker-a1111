@@ -54,35 +54,35 @@ RUN mkdir -p /stable-diffusion-webui/models/ControlNet
 RUN mkdir -p /stable-diffusion-webui/models/Lora /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/clip_vision /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/insightface/models/buffalo_l
 
 # Download the IP-Adapter FaceID model and place it in the ControlNet models directory
-RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter-plus-face_sdxl_vit-h.safetensors \
+RUN wget -q -O /stable-diffusion-webui/models/ControlNet/ip-adapter-plus-face_sdxl_vit-h.safetensors \
 https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors
 
-RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter_sdxl.safetensors \
+RUN wget -q -O /stable-diffusion-webui/models/ControlNet/ip-adapter_sdxl.safetensors \
 https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
 
-RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter_sdxl_vit-h.safetensors \
+RUN wget -q -O /stable-diffusion-webui/models/ControlNet/ip-adapter_sdxl_vit-h.safetensors \
 https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl_vit-h.safetensors
 
-RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter_xl.pth \
+RUN wget -q -O /stable-diffusion-webui/models/ControlNet/ip-adapter_xl.pth \
 https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/ip-adapter_xl.pth
 
-RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter-faceid_sdxl.bin \
+RUN wget -q -O /stable-diffusion-webui/models/ControlNet/ip-adapter-faceid_sdxl.pth \
 https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin
 
-RUN wget -q -O /stable-diffusion-webui//models/ControlNet/ip-adapter-faceid-plusv2_sdxl.bin \
+RUN wget -q -O /stable-diffusion-webui/models/ControlNet/ip-adapter-faceid-plusv2_sdxl.pth \
 https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-plusv2_sdxl.bin
 
-RUN wget -q -O /stable-diffusion-webui//models/Lora/ip-adapter-faceid_sdxl_lora.safetensors \
+RUN wget -q -O /stable-diffusion-webui/models/Lora/ip-adapter-faceid_sdxl_lora.safetensors \
 https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl_lora.safetensors
 
-RUN wget -q -O /stable-diffusion-webui//models/Lora/ip-adapter-faceid-plusv2_sdxl_lora.safetensors \
+RUN wget -q -O /stable-diffusion-webui/models/Lora/ip-adapter-faceid-plusv2_sdxl_lora.safetensors \
 https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-plusv2_sdxl_lora.safetensors
 
 # Download the Openpose model and place it in the ControlNet models directory
-RUN wget -q -O /stable-diffusion-webui//models/ControlNet/controlnet-openpose-sdxl-1.0.safetensors \
+RUN wget -q -O /stable-diffusion-webui/models/ControlNet/controlnet-openpose-sdxl-1.0.safetensors \
 https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/resolve/main/diffusion_pytorch_model.safetensors
 
-RUN wget -q -O /stable-diffusion-webui//models/ControlNet/controlnet-openpose-sdxl-1.0_twins.safetensors \
+RUN wget -q -O /stable-diffusion-webui/models/ControlNet/controlnet-openpose-sdxl-1.0_twins.safetensors \
 https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/resolve/main/diffusion_pytorch_model_twins.safetensors
 
 RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/clip_vision/clip_h.pth \
