@@ -1,5 +1,5 @@
 # Use RunPod's base PyTorch image
-FROM runpod/pytorch:3.10-2.0.0-117
+FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
 
 # Use bash shell with pipefail option
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -11,24 +11,12 @@ WORKDIR /
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt install -y \
-        fonts-dejavu-core rsync nano git jq moreutils aria2 wget mc libgoogle-perftools-dev procps && \
-    apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
-
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118   
+        fonts-dejavu-core rsync nano git jq moreutils aria2 wget mc libgoogle-perftools-dev procps cmake make
 
 # Clone the specific version of Forge Stable Diffusion WebUI
 RUN git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git && \
     cd stable-diffusion-webui-forge && \
     git reset --hard bae1bba891508f9970f72edd7a70336a54557dc1
-
-# Copy the script into the container
-COPY builder/check_and_download.sh /usr/local/bin/check_and_download.sh
-
-# Make the script executable
-RUN chmod +x /usr/local/bin/check_and_download.sh
-
-# Run the script
-RUN /usr/local/bin/check_and_download.sh   
 
 # Install Python dependencies
 COPY builder/requirements.txt /requirements.txt
@@ -40,7 +28,7 @@ RUN mkdir -p /stable-diffusion-webui-forge/models/ControlNet
 RUN mkdir -p /stable-diffusion-webui-forge/models/Lora
 RUN mkdir -p /stable-diffusion-webui-forge/models/ControlNetPreprocessor/openpose
 
-RUN wget -q -O /stable-diffusion-webui-forge/models/Stable-diffusion/model.safetensors \
+RUN wget -q -O /stable-diffusion-webui-forge/model.safetensors \
 https://huggingface.co/lllyasviel/flux1-dev-bnb-nf4/resolve/main/flux1-dev-bnb-nf4-v2.safetensors
 
 RUN wget -q -O /stable-diffusion-webui-forge/models/ControlNetPreprocessor/openpose/body_pose_model.pth \
