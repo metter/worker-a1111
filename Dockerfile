@@ -5,7 +5,7 @@ FROM alpine:3.18 AS downloader
 RUN apk add --no-cache bash git wget
 
 # Create the required directories for models and custom nodes
-RUN mkdir -p /downloads/models/sams /downloads/models/antelopev2 /downloads/models/qresearch/doubutsu-2b-pt-756/ /downloads/models/qresearch/doubutsu-2b-lora-756-docci/. /downloads/models/grounding-dino /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
+RUN mkdir -p /downloads/models/sams /downloads/models/grounding-dino /downloads/models/inpaint/brushnet_xl /downloads/models/clip /downloads/models/sam2 /downloads/models/antelopev2 /downloads/models/qresearch/doubutsu-2b-pt-756/ /downloads/models/qresearch/doubutsu-2b-lora-756-docci/. /downloads/models/grounding-dino /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
 
 # Set the working directory for downloading
 WORKDIR /downloads   
@@ -285,8 +285,6 @@ COPY embeddings /ComfyUI/models/embeddings
 COPY loras /ComfyUI/models/loras
 COPY characters /characters
 COPY src/base64_encoder.py /base64_encoder.py
-COPY models/inpaint /ComfyUI/models/inpaint
-COPY models/clip /ComfyUI/models/clip
 ADD src . 
 
 # Download and install remote_syslog2
@@ -303,10 +301,7 @@ RUN echo "files:" >> /etc/log_files.yml && \
     echo "  port: 27472" >> /etc/log_files.yml && \
     echo "  protocol: tls" >> /etc/log_files.yml
 
-
 RUN pip install albucore==0.0.16   
-
-COPY models/antelopev2/ /ComfyUI/models/insightface/models/antelopev2/
 
 # Set up Papertrail (logging)
 COPY builder/papertrail.sh /papertrail.sh    
