@@ -6,7 +6,21 @@
 echo "Worker Initiated"
 
 echo "Starting WebUI API"
-python /stable-diffusion-webui-forge/webui.py --skip-python-version-check --skip-torch-cuda-test --skip-install --ckpt /-forge/model.safetensors --opt-sdp-attention --disable-safe-unpickle --port 3000 --api --nowebui --skip-version-check --no-hashing --no-download-sd-model --no-half --xformers &
-
+python /stable-diffusion-webui-forge/webui.py \
+    --skip-python-version-check \
+    --skip-torch-cuda-test \
+    --skip-install \
+    --ckpt /stable-diffusion-webui-forge/models/Stable-diffusion/model.safetensors \
+    --opt-sdp-attention \
+    --disable-safe-unpickle \
+    --port 3000 \
+    --api \
+    --nowebui \
+    --skip-version-check \
+    --no-hashing \
+    --no-download-sd-model \
+    --no-half \
+    --xformers &
+    
 echo "Starting RunPod Handler"
 python -u /rp_handler.py

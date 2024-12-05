@@ -8,10 +8,12 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 WORKDIR /
 
 # Update and upgrade the system packages
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt install -y \
-        fonts-dejavu-core rsync nano git jq moreutils aria2 wget mc libgoogle-perftools-dev procps cmake make
+RUN apt-get update && apt-get install -y \
+    cmake \
+    make \
+    protobuf-compiler \
+    libprotoc-dev \
+    fonts-dejavu-core rsync nano git jq moreutils aria2 wget mc libgoogle-perftools-dev procps
 
 # Clone the specific version of Forge Stable Diffusion WebUI
 RUN git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git && \
@@ -21,14 +23,16 @@ RUN git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git && 
 # Install Python dependencies
 COPY builder/requirements.txt /requirements.txt
 RUN pip install --upgrade pip && \
-    pip install --upgrade -r /requirements.txt --no-cache-dir && \
+    pip install -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
+# Create necessary directories
 RUN mkdir -p /stable-diffusion-webui-forge/models/ControlNet
 RUN mkdir -p /stable-diffusion-webui-forge/models/Lora
 RUN mkdir -p /stable-diffusion-webui-forge/models/ControlNetPreprocessor/openpose
 
-RUN wget -q -O /stable-diffusion-webui-forge/model.safetensors \
+# Download required models
+RUN wget -q -O /stable-diffusion-webui-forge/models/Stable-diffusion/model.safetensors \
 https://huggingface.co/lllyasviel/flux1-dev-bnb-nf4/resolve/main/flux1-dev-bnb-nf4-v2.safetensors
 
 RUN wget -q -O /stable-diffusion-webui-forge/models/ControlNetPreprocessor/openpose/body_pose_model.pth \
