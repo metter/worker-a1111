@@ -5,10 +5,18 @@ FROM alpine:3.18 AS downloader
 RUN apk add --no-cache bash git wget
 
 # Create the required directories for models and custom nodes
-RUN mkdir -p /downloads/models/sams /downloads/models/grounding-dino /downloads/models/inpaint/brushnet_xl /downloads/models/clip /downloads/models/vae /downloads/models/sam2 /downloads/models/antelopev2 /downloads/models/qresearch/doubutsu-2b-pt-756/ /downloads/models/qresearch/doubutsu-2b-lora-756-docci/. /downloads/models/grounding-dino /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
+RUN mkdir -p /downloads/models/sams /downloads/models/grounding-dino /downloads/models/inpaint/brushnet_xl \
+    /downloads/models/clip /downloads/models/vae /downloads/models/sam2 /downloads/models/antelopev2 \
+    /downloads/models/qresearch/doubutsu-2b-pt-756/ /downloads/models/qresearch/doubutsu-2b-lora-756-docci/ \
+    /downloads/models/grounding-dino /downloads/models/checkpoints /downloads/models/controlnet \
+    /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
 
 # Set the working directory for downloading
 WORKDIR /downloads   
+
+# Define build argument for Hugging Face token
+ARG HUGGINGFACE_ACCESS_TOKEN
+ENV HUGGINGFACE_ACCESS_TOKEN=${HUGGINGFACE_ACCESS_TOKEN}
 
 # Clone the ComfyUI repository and reset to a specific commit
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /downloads/ComfyUI && \
@@ -18,69 +26,50 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /downloads/ComfyUI &
 # Download the required models
 WORKDIR /downloads/models
 
-RUN wget --progress=dot:giga -O /downloads/models/checkpoints/flux1-schnell-fp8.safetensors \
-    https://huggingface.co/Comfy-Org/flux1-schnell/blob/main/flux1-schnell-fp8.safetensors
+# Download the flux1-schnell-fp8.safetensors model with authentication
+RUN wget --progress=dot:giga \
+    --header="Authorization: Bearer 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" \
+    -O /downloads/models/checkpoints/flux1-schnell-fp8.safetensors \
+    https://huggingface.co/Comfy-Org/flux1-schnell/resolve/main/flux1-schnell-fp8.safetensors
 
-RUN wget --progress=dot:giga -O /downloads/models/checkpoints/flux1-dev.safetensors \
-    https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/flux1-dev.safetensors    
+# Download the flux1-dev.safetensors model with authentication
+RUN wget --progress=dot:giga \
+    --header="Authorization: Bearer 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" \
+    -O /downloads/models/checkpoints/flux1-dev.safetensors \
+    https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/flux1-dev.safetensors   
 
-#CLIP
+# CLIP
 RUN wget --progress=dot:giga -O /downloads/models/clip/clip_l.safetensors \
-    https://huggingface.co/comfyanonymous/flux_text_encoders/blob/main/clip_l.safetensors
+    https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors
 
 RUN wget --progress=dot:giga -O /downloads/models/clip/t5xxl_fp8_e4m3fn.safetensors \
-    https://huggingface.co/comfyanonymous/flux_text_encoders/blob/main/t5xxl_fp8_e4m3fn.safetensors
+    https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors
     
- #VAE
+# VAE
 RUN wget --progress=dot:giga -O /downloads/models/vae/ae.safetensors \
-    https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/main/ae.safetensors   
+    https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors   
+    
 
+# ControlNet
+RUN wget --progress=dot:giga -O /downloads/models/controlnet/FLUX-1-dev-ControlNet-Union-Pro.safetensors \
+    https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro/resolve/main/diffusion_pytorch_model.safetensors
 
-RUN wget --progress=dot:giga -O /downloads/models/ipadapter/ip-adapter-plus-face_sdxl_vit-h.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors
-
-RUN wget --progress=dot:giga -O /downloads/models/ipadapter/ip-adapter-plus_sdxl_vit-h.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors
-
-RUN wget --progress=dot:giga -O /downloads/models/ipadapter/ip-adapter_sdxl.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
-
-RUN wget --progress=dot:giga -O /downloads/models/ipadapter/ip-adapter_sdxl_vit-h.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl_vit-h.safetensors
-
-RUN wget --progress=dot:giga -O /downloads/models/ipadapter/ip-adapter-faceid_sdxl.bin \
-    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin
-
-RUN wget --progress=dot:giga -O /downloads/models/ipadapter/ip-adapter-faceid-plusv2_sdxl.bin \
-    https://huggingface.co/h94/IP-Adapter-FaceID/blob/main/ip-adapter-faceid-plusv2_sdxl.bin
-
-RUN wget --progress=dot:giga -O /downloads/models/loras/ip-adapter-faceid_sdxl_lora.safetensors \
-    https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl_lora.safetensors
-
-RUN wget --progress=dot:giga -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0.safetensors \
-    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model.safetensors
-
-RUN wget --progress=dot:giga -O /downloads/models/controlnet/controlnet-openpose-sdxl-1.0_twins.safetensors \
-    https://huggingface.co/xinsir/controlnet-openpose-sdxl-1.0/blob/main/diffusion_pytorch_model_twins.safetensors
-
+# Clip Vision
 RUN wget --progress=dot:giga -O /downloads/models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors   
 
-RUN wget --progress=dot:giga -O /downloads/models/controlnet/OpenPoseXL2.safetensors  \
-    https://huggingface.co/thibaud/controlnet-openpose-sdxl-1.0/resolve/main/OpenPoseXL2.safetensors 
-    
+# Grounding DINO
 RUN wget --progress=dot:giga -O /downloads/models/grounding-dino/groundingdino_swinb_cogcoor.pth \
     https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swinb_cogcoor.pth 
 
+# SAM Models
 RUN wget --progress=dot:giga -O /downloads/models/sams/sam2_hiera_base_plus.pt \
     https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_base_plus.pt
 
 RUN wget --progress=dot:giga -O /downloads/models/sams/sam2_hiera_large.pt \
     https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_large.pt    
-    
-RUN wget --progress=dot:giga -O /downloads/models/checkpoints/dreamshaperXL_v21TurboDPMSDE.safetensors \
-    https://huggingface.co/AI2lab/SDXL-Models/resolve/main/dreamshaperXL_v21TurboDPMSDE.safetensors
 
+# QResearch Models
 RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-pt-756/doubutsu-2b-pt-756.bin \
     https://huggingface.co/qresearch/doubutsu-2b-pt-756/resolve/main/pytorch_model.bin
 
@@ -92,7 +81,7 @@ RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-pt-756/c
 
 RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-pt-756/special_tokens_map.json  \
     https://huggingface.co/qresearch/doubutsu-2b-pt-756/resolve/main/special_tokens_map.json     
-    
+        
 RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-pt-756/tokenizer.json  \
     https://huggingface.co/qresearch/doubutsu-2b-pt-756/resolve/main/tokenizer.json 
 
@@ -101,7 +90,7 @@ RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-pt-756/t
 
 RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-pt-756/vocab.json  \
     https://huggingface.co/qresearch/doubutsu-2b-pt-756/resolve/main/vocab.json    
-
+    
 RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-pt-756/configuration_doubutsu_next.py  \
     https://huggingface.co/qresearch/doubutsu-2b-pt-756/resolve/main/configuration_doubutsu_next.py 
 
@@ -117,6 +106,7 @@ RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-lora-756
 RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-lora-756-docci/adapter_config.json  \
     https://huggingface.co/qresearch/doubutsu-2b-lora-756-docci/resolve/main/adapter_config.json     
 
+# Additional SAM and Grounding DINO Models
 RUN wget -q -O /downloads/models/sam2/sam2_hiera_tiny.pt \
     https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_tiny.pt
 
@@ -126,28 +116,25 @@ RUN wget -q -O /downloads/models/grounding-dino/GroundingDINO_SwinT_OGC.cfg.py \
 RUN wget -q -O /downloads/models/grounding-dino/groundingdino_swint_ogc.pth \
     https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swint_ogc.pth
 
+# Antelopev2 Models
 RUN wget -q -O /downloads/models/antelopev2/1k3d68.onnx \
     https://huggingface.co/camenduru/show/resolve/main/insightface/models/antelopev2/1k3d68.onnx
 
-RUN wget -q -O /downloads/models/antelopev2/1k3d68.onnx \
+RUN wget -q -O /downloads/models/antelopev2/2d106det.onnx \
     https://huggingface.co/camenduru/show/resolve/main/insightface/models/antelopev2/2d106det.onnx    
 
-    RUN wget -q -O /downloads/models/antelopev2/2d106det.onnx \
+RUN wget -q -O /downloads/models/antelopev2/genderage.onnx \
     https://huggingface.co/camenduru/show/resolve/main/insightface/models/antelopev2/genderage.onnx
-    
+
 RUN wget -q -O /downloads/models/antelopev2/glintr100.onnx \
     https://huggingface.co/camenduru/show/resolve/main/insightface/models/antelopev2/glintr100.onnx
-    
+
 RUN wget -q -O /downloads/models/antelopev2/scrfd_10g_bnkps.onnx \
     https://huggingface.co/camenduru/show/resolve/main/insightface/models/antelopev2/scrfd_10g_bnkps.onnx  
+    
 
-RUN wget -q -O /downloads/models/inpaint/brushnet_xl/random_mask.safetensors \
-    https://huggingface.co/grzelakadam/brushnet_xl_models/resolve/main/random_mask_brushnet_ckpt_sdxl_v0.safetensors  
-
-RUN wget -q -O /downloads/models/inpaint/brushnet_xl/segmentation_mask.safetensors \ 
-    https://huggingface.co/grzelakadam/brushnet_xl_models/resolve/main/segmentation_mask_brushnet_ckpt_sdxl_v0.safetensors  
-
-RUN wget -q -O /downloads/models/clip/pytorch_model.safetensors \ 
+# Clip Vision Model
+RUN wget -q -O /downloads/models/clip/pytorch_model.safetensors \
     https://huggingface.co/shiertier/clip_vision/resolve/main/model.safetensors 
 
 # Clone the custom nodes repositories
@@ -168,7 +155,7 @@ RUN git clone https://github.com/Acly/comfyui-tooling-nodes.git /downloads/custo
 RUN git clone https://github.com/lldacing/comfyui-easyapi-nodes.git /downloads/custom_nodes/comfyui_easyapi_nodes && \
     cd /downloads/custom_nodes/comfyui_easyapi_nodes && \
     git reset --hard c11ff7751659b03b9b1442e5f41d41f7b3ccd85f
-    
+
 RUN git clone https://github.com/nullquant/ComfyUI-BrushNet.git /downloads/custom_nodes/ComfyUI-BrushNet && \
     cd /downloads/custom_nodes/ComfyUI-BrushNet && \
     git reset --hard a510effde1ba9df8324f80bb5fc684b5a62792d4    
@@ -204,7 +191,7 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git /downloads/cus
 RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2.git /downloads/custom_nodes/ComfyUI-SAM2 && \
     cd /downloads/custom_nodes/ComfyUI-SAM2 && \
     git reset --hard 61a97f2fe8094a1da48b4313394a1e18b529cccf   
-    
+        
 RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git /downloads/custom_nodes/ComfyUI-Manager && \
     cd /downloads/custom_nodes/ComfyUI-Manager && \
     git reset --hard de3cd9fe721020463e3e1c107a257ba1a52b9acd     
@@ -212,13 +199,22 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git /downloads/custom_
 RUN git clone https://github.com/crystian/ComfyUI-Crystools.git /downloads/custom_nodes/ComfyUI-Crystools && \
     cd /downloads/custom_nodes/ComfyUI-Crystools && \
     git reset --hard 09d84235d99789447d143c4a4907c2d22e452097     
-
+    
 RUN git clone https://github.com/EnragedAntelope/ComfyUI-Doubutsu-Describer.git /downloads/custom_nodes/ComfyUI-Doubutsu-Describer && \
-        cd /downloads/custom_nodes/ComfyUI-Doubutsu-Describer && \
-        git reset --hard b189b66de6ee5275bc59c101e0fe50fb54604dbd   
-        
+    cd /downloads/custom_nodes/ComfyUI-Doubutsu-Describer && \
+    git reset --hard b189b66de6ee5275bc59c101e0fe50fb54604dbd   
+
+# Install Required Plugins
+RUN git clone https://github.com/comfyanonymous/ComfyUI_bitsandbytes_NF4.git /downloads/custom_nodes/ComfyUI_bitsandbytes_NF4 && \
+    cd /downloads/custom_nodes/ComfyUI_bitsandbytes_NF4 && \
+    git reset --hard c13c3b5b264ebf32153c6fa53b96c836746258c3
+
+RUN git clone https://github.com/city96/ComfyUI-GGUF.git /downloads/custom_nodes/ComfyUI-GGUF && \
+    cd /downloads/custom_nodes/ComfyUI-GGUF && \
+    git reset --hard 851564739d166b888dd9cea80f90dc8219393b52
+
 # Stage 2: Final Setup Stage
-FROM runpod/2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+FROM cnstark/pytorch:2.3.1-py3.10.15-cuda12.1.0-ubuntu22.04
 
 # Use bash shell with pipefail option
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -246,50 +242,25 @@ RUN pip install --upgrade pip && \
     pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
+COPY builder/manual_comfyui_start.sh /manual_comfyui_start.sh    
+
 # Install dependencies for ComfyUI
 RUN cd /ComfyUI && \
     pip install --upgrade -r requirements.txt --no-cache-dir
 
-# Install dependencies for comfyui_controlnet_aux
-RUN cd /ComfyUI/custom_nodes/comfyui_controlnet_aux && \
-    pip install --upgrade -r requirements.txt --no-cache-dir  
+# Install dependencies for all custom nodes
+RUN for dir in /ComfyUI/custom_nodes/*; do \
+        if [ -f "$dir/requirements.txt" ]; then \
+            pip install --upgrade -r "$dir/requirements.txt" --no-cache-dir; \
+        fi; \
+    done
 
-# Install dependencies for comfyui-easyapi-nodes
-RUN cd /ComfyUI/custom_nodes/comfyui_easyapi_nodes && \
-    pip install --upgrade -r requirements.txt --no-cache-dir   
-    
-# Install dependencies for ComfyUI-BrushNet
-RUN cd /ComfyUI/custom_nodes/ComfyUI-BrushNet && \
-   pip install --upgrade -r requirements.txt --no-cache-dir    
-
-# Install dependencies for ComfyUI-OpenPose
-RUN cd /ComfyUI/custom_nodes/ComfyUI-OpenPose && \
-   pip install --upgrade -r requirements.txt --no-cache-dir    
-
-# Install dependencies for rgthree-comfy
-RUN cd /ComfyUI/custom_nodes/rgthree-comfy && \
-   pip install --upgrade -r requirements.txt --no-cache-dir    
-
-# Install dependencies for ComfyUI-Impact-Pack
-RUN cd /ComfyUI/custom_nodes/ComfyUI-Impact-Pack && \
-   pip install --upgrade -r requirements.txt --no-cache-dir    
-
-# Install dependencies for ComfyUI-SAM2
-RUN cd /ComfyUI/custom_nodes/ComfyUI-SAM2 && \
-   pip install --upgrade -r requirements.txt --no-cache-dir    
-
- # Install dependencies for ComfyUI-Manager
-RUN cd /ComfyUI/custom_nodes/ComfyUI-Manager && \
+# Install dependencies for bitsandbytes and GGUF plugins
+RUN cd /ComfyUI/custom_nodes/ComfyUI_bitsandbytes_NF4 && \
+    pip install --upgrade -r requirements.txt --no-cache-dir && \
+    cd /ComfyUI/custom_nodes/ComfyUI-GGUF && \
     pip install --upgrade -r requirements.txt --no-cache-dir
 
-# Install dependencies for ComfyUI-Crystools
-RUN cd /ComfyUI/custom_nodes/ComfyUI-Crystools && \
-   pip install --upgrade -r requirements.txt --no-cache-dir
-
-# Install dependencies for ComfyUI-Doubutsu-Describer
-RUN cd /ComfyUI/custom_nodes/ComfyUI-Doubutsu-Describer && \
-   pip install --upgrade -r requirements.txt --no-cache-dir
-   
 # Copy the dryrun.sh script into the container
 COPY builder/dryrun.sh /ComfyUI/dryrun.sh
 RUN chmod +x /ComfyUI/dryrun.sh
@@ -299,14 +270,22 @@ RUN /ComfyUI/dryrun.sh
 COPY loras /ComfyUI/models/loras
 COPY characters /characters
 COPY src/base64_encoder.py /base64_encoder.py
-ADD src . 
+ADD src /ComfyUI/src
 
-
-RUN pip install albucore==0.0.16   
+# Install additional Python packages
+RUN pip install albucore==0.0.16
 
 # Cleanup and final setup
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
+# Expose ComfyUI port
+EXPOSE 8188
+
+# Set environment variables
+ENV COMFYUI_HOST=0.0.0.0
+ENV COMFYUI_PORT=8188
+
 # Set permissions and specify the command to run
+COPY src/start.sh /start.sh
 RUN chmod +x /start.sh
-CMD /start.sh
+CMD ["/start.sh"]
