@@ -5,7 +5,7 @@ FROM alpine:3.18 AS downloader
 RUN apk add --no-cache bash git wget
 
 # Create the required directories for models and custom nodes
-RUN mkdir -p /downloads/models/sams /downloads/models/grounding-dino /downloads/models/inpaint/brushnet_xl /downloads/models/clip /downloads/models/sam2 /downloads/models/antelopev2 /downloads/models/qresearch/doubutsu-2b-pt-756/ /downloads/models/qresearch/doubutsu-2b-lora-756-docci/. /downloads/models/grounding-dino /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
+RUN mkdir -p /downloads/models/sams /downloads/models/grounding-dino /downloads/models/inpaint/brushnet_xl /downloads/models/clip /downloads/models/vae /downloads/models/sam2 /downloads/models/antelopev2 /downloads/models/qresearch/doubutsu-2b-pt-756/ /downloads/models/qresearch/doubutsu-2b-lora-756-docci/. /downloads/models/grounding-dino /downloads/models/checkpoints /downloads/models/controlnet /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
 
 # Set the working directory for downloading
 WORKDIR /downloads   
@@ -13,13 +13,28 @@ WORKDIR /downloads
 # Clone the ComfyUI repository and reset to a specific commit
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /downloads/ComfyUI && \
     cd /downloads/ComfyUI && \
-    git reset --hard f1c2301697cb1cd538f8d4190741935548bb6734  
+    git reset --hard 9a616b81c15cec7f5ddcbc12e349f1adc03fad67  
 
 # Download the required models
 WORKDIR /downloads/models
 
-RUN wget --progress=dot:giga -O /downloads/models/checkpoints/sd_xl_base_1.0.safetensors \
-    https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
+RUN wget --progress=dot:giga -O /downloads/models/checkpoints/flux1-schnell-fp8.safetensors \
+    https://huggingface.co/Comfy-Org/flux1-schnell/blob/main/flux1-schnell-fp8.safetensors
+
+RUN wget --progress=dot:giga -O /downloads/models/checkpoints/flux1-dev.safetensors \
+    https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/flux1-dev.safetensors    
+
+#CLIP
+RUN wget --progress=dot:giga -O /downloads/models/clip/clip_l.safetensors \
+    https://huggingface.co/comfyanonymous/flux_text_encoders/blob/main/clip_l.safetensors
+
+RUN wget --progress=dot:giga -O /downloads/models/clip/t5xxl_fp8_e4m3fn.safetensors \
+    https://huggingface.co/comfyanonymous/flux_text_encoders/blob/main/t5xxl_fp8_e4m3fn.safetensors
+    
+ #VAE
+RUN wget --progress=dot:giga -O /downloads/models/vae/ae.safetensors \
+    https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/main/ae.safetensors   
+
 
 RUN wget --progress=dot:giga -O /downloads/models/ipadapter/ip-adapter-plus-face_sdxl_vit-h.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors
@@ -203,7 +218,7 @@ RUN git clone https://github.com/EnragedAntelope/ComfyUI-Doubutsu-Describer.git 
         git reset --hard b189b66de6ee5275bc59c101e0fe50fb54604dbd   
         
 # Stage 2: Final Setup Stage
-FROM runpod/pytorch:3.10-2.0.0-117
+FROM runpod/2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
 
 # Use bash shell with pipefail option
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -281,31 +296,13 @@ RUN chmod +x /ComfyUI/dryrun.sh
 RUN /ComfyUI/dryrun.sh
 
 # Copy additional resources
-COPY embeddings /ComfyUI/models/embeddings
 COPY loras /ComfyUI/models/loras
 COPY characters /characters
 COPY src/base64_encoder.py /base64_encoder.py
 ADD src . 
 
-# Download and install remote_syslog2
-RUN wget https://github.com/papertrail/remote_syslog2/releases/download/v0.20/remote_syslog_linux_amd64.tar.gz && \
-    tar xzf ./remote_syslog*.tar.gz && \
-    cp ./remote_syslog/remote_syslog /usr/local/bin/ && \
-    rm -r ./remote_syslog_linux_amd64.tar.gz ./remote_syslog
-
-# Create a config file for remote_syslog
-RUN echo "files:" >> /etc/log_files.yml && \
-    echo "  - /var/log/runpod_handler.log" >> /etc/log_files.yml && \
-    echo "destination:" >> /etc/log_files.yml && \
-    echo "  host: logs.papertrailapp.com" >> /etc/log_files.yml && \
-    echo "  port: 27472" >> /etc/log_files.yml && \
-    echo "  protocol: tls" >> /etc/log_files.yml
 
 RUN pip install albucore==0.0.16   
-
-# Set up Papertrail (logging)
-COPY builder/papertrail.sh /papertrail.sh    
-RUN chmod +x /papertrail.sh
 
 # Cleanup and final setup
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
