@@ -4,8 +4,6 @@
 # exec > /var/log/runpod_handler.log 2>&1
 
 echo "Worker Initiated"
-/papertrail.sh &
-echo "papertrail initialised"
 
 echo "Starting WebUI API"
 python /ComfyUI/main.py --listen --port 8188 --disable-auto-launch --verbose &
