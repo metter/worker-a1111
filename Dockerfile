@@ -43,7 +43,13 @@ RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git /stable-diffus
     pip install --upgrade -r /stable-diffusion-webui/extensions/sd-webui-controlnet/requirements.txt --no-cache-dir
 
 RUN mkdir -p /stable-diffusion-webui/models/ControlNet
-RUN mkdir -p /stable-diffusion-webui/models/Lora /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/clip_vision /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/insightface/models/buffalo_l
+RUN mkdir -p /stable-diffusion-webui/models/Lora \
+    /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/clip_vision \
+    /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/downloads/insightface/models/buffalo_l \
+    /stable-diffusion-webui/models/VAE-approx
+
+RUN wget -q -O /stable-diffusion-webui/models/VAE-approx/vaeapprox-sdxl.pt \
+    https://huggingface.co/ashleykleynhans/a1111-models/resolve/main/VAE-approx/vaeapprox-sdxl.pt
 
 # Download the IP-Adapter FaceID model and place it in the ControlNet models directory
 RUN wget -q -O /stable-diffusion-webui/models/ControlNet/ip-adapter-plus-face_sdxl_vit-h.safetensors \
@@ -96,7 +102,7 @@ RUN wget -q -O /stable-diffusion-webui/extensions/sd-webui-controlnet/annotator/
 https://huggingface.co/public-data/insightface/resolve/main/models/buffalo_l/w600k_r50.onnx
 
 # Launch the WebUI to finalize setup (this step installs any remaining dependencies)
-RUN python /stable-diffusion-webui/launch.py --model /stable-diffusion-webui/model.safetensors --exit --skip-torch-cuda-test --xformers --no-half --reinstall-xformers --reinstall-torch
+RUN python /stable-diffusion-webui/launch.py --ckpt /stable-diffusion-webui/model.safetensors --exit --skip-torch-cuda-test --xformers --no-half --reinstall-xformers --reinstall-torch
 
 # RUN pip install --upgrade torchdynamo
 RUN pip install protobuf==3.20.3
