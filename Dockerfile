@@ -5,11 +5,23 @@ FROM alpine:3.18 AS downloader
 RUN apk add --no-cache bash git wget
 
 # Create the required directories for models and custom nodes
-RUN mkdir -p /downloads/models/sams /downloads/models/grounding-dino /downloads/models/inpaint/brushnet_xl \
-    /downloads/models/clip /downloads/models/vae /downloads/models/sam2 /downloads/models/antelopev2 \
-    /downloads/models/qresearch/doubutsu-2b-pt-756/ /downloads/models/qresearch/doubutsu-2b-lora-756-docci/ \
-    /downloads/models/grounding-dino /downloads/models/checkpoints /downloads/models/controlnet \
-    /downloads/models/ipadapter /downloads/models/loras /downloads/models/clip_vision /downloads/custom_nodes
+RUN mkdir -p /downloads/models/sams 
+/downloads/models/grounding-dino 
+/downloads/models/inpaint/brushnet_xl \
+    /downloads/models/clip \
+    /downloads/models/vae \
+    /downloads/models/sam2 \
+    /downloads/models/antelopev2 \
+    /downloads/models/qresearch/doubutsu-2b-pt-756 \
+    /downloads/models/qresearch/doubutsu-2b-lora-756-docci \
+    /downloads/models/grounding-dino \
+    /downloads/models/checkpoints \
+    /downloads/models/controlnet \
+    /downloads/models/ipadapter \
+    /downloads/models/loras \
+    /downloads/models/clip_vision \
+    /downloads/custom_nodes \
+    /downloads/models/unet
 
 # Set the working directory for downloading
 WORKDIR /downloads   
@@ -29,13 +41,13 @@ WORKDIR /downloads/models
 # Download the flux1-schnell-fp8.safetensors model with authentication
 RUN wget --progress=dot:giga \
     --header="Authorization: Bearer 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" \
-    -O /downloads/models/checkpoints/flux1-schnell-fp8.safetensors \
+    -O /downloads/models/unet/flux1-schnell-fp8.safetensors \
     https://huggingface.co/Comfy-Org/flux1-schnell/resolve/main/flux1-schnell-fp8.safetensors
 
 # Download the flux1-dev.safetensors model with authentication
 RUN wget --progress=dot:giga \
     --header="Authorization: Bearer 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" \
-    -O /downloads/models/checkpoints/flux1-dev.safetensors \
+    -O /downloads/models/unet/flux1-dev.safetensors \
     https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/flux1-dev.safetensors   
 
 # CLIP
@@ -44,12 +56,17 @@ RUN wget --progress=dot:giga -O /downloads/models/clip/clip_l.safetensors \
 
 RUN wget --progress=dot:giga -O /downloads/models/clip/t5xxl_fp8_e4m3fn.safetensors \
     https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors
+
+RUN wget --progress=dot:giga -O /downloads/models/clip/t5xxl_fp16.safetensors \
+    https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors    
     
 # VAE
-RUN wget --progress=dot:giga -O /downloads/models/vae/ae.safetensors \
-    https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors   
+RUN wget --progress=dot:giga -O /downloads/models/vae/flux-schnell-vae.safetensors \
+    https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/vae/diffusion_pytorch_model.safetensors  
     
-
+RUN wget --progress=dot:giga -O /downloads/models/vae/flux-dev-vae.safetensors \
+    https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/vae/diffusion_pytorch_model.safetensors    
+    
 # ControlNet
 RUN wget --progress=dot:giga -O /downloads/models/controlnet/FLUX-1-dev-ControlNet-Union-Pro.safetensors \
     https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro/resolve/main/diffusion_pytorch_model.safetensors
@@ -204,6 +221,16 @@ RUN git clone https://github.com/EnragedAntelope/ComfyUI-Doubutsu-Describer.git 
     cd /downloads/custom_nodes/ComfyUI-Doubutsu-Describer && \
     git reset --hard b189b66de6ee5275bc59c101e0fe50fb54604dbd   
 
+RUN git clone https://github.com/WASasquatch/was-node-suite-comfyui.git /downloads/custom_nodes/was-node-suite-comfyui && \
+    cd /downloads/custom_nodes/was-node-suite-comfyui && \
+    git reset --hard fe7e0884aaf0188248d9abf1e500f5116097fec1 && \
+    pip install --upgrade -r /requirements.txt --no-cache-dir   
+
+RUN git clone https://github.com/yolain/ComfyUI-Easy-Use.git /downloads/custom_nodes/ComfyUI-Easy-Use && \
+    cd /downloads/custom_nodes/ComfyUI-Easy-Use && \
+    git reset --hard d416ad21f0d84c04a5b7e68c59e5212525443b8e && \
+    pip install --upgrade -r /requirements.txt --no-cache-dir    
+
 # Install Required Plugins
 RUN git clone https://github.com/comfyanonymous/ComfyUI_bitsandbytes_NF4.git /downloads/custom_nodes/ComfyUI_bitsandbytes_NF4 && \
     cd /downloads/custom_nodes/ComfyUI_bitsandbytes_NF4 && \
@@ -267,7 +294,7 @@ RUN chmod +x /ComfyUI/dryrun.sh
 RUN /ComfyUI/dryrun.sh
 
 # Copy additional resources
-COPY loras /ComfyUI/models/loras
+COPY flux-loras /ComfyUI/models/loras
 COPY characters /characters
 COPY src/base64_encoder.py /base64_encoder.py
 ADD src /ComfyUI/src
