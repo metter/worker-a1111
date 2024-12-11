@@ -5,16 +5,15 @@ FROM alpine:3.18 AS downloader
 RUN apk add --no-cache bash git wget
 
 # Create the required directories for models and custom nodes
-RUN mkdir -p /downloads/models/sams 
-/downloads/models/grounding-dino 
-/downloads/models/inpaint/brushnet_xl \
+RUN mkdir -p /downloads/models/sams \
+    /downloads/models/grounding-dino \
+    /downloads/models/inpaint/brushnet_xl \
     /downloads/models/clip \
     /downloads/models/vae \
     /downloads/models/sam2 \
     /downloads/models/antelopev2 \
     /downloads/models/qresearch/doubutsu-2b-pt-756 \
     /downloads/models/qresearch/doubutsu-2b-lora-756-docci \
-    /downloads/models/grounding-dino \
     /downloads/models/checkpoints \
     /downloads/models/controlnet \
     /downloads/models/ipadapter \
@@ -64,7 +63,9 @@ RUN wget --progress=dot:giga -O /downloads/models/clip/t5xxl_fp16.safetensors \
 RUN wget --progress=dot:giga -O /downloads/models/vae/flux-schnell-vae.safetensors \
     https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/vae/diffusion_pytorch_model.safetensors  
     
-RUN wget --progress=dot:giga -O /downloads/models/vae/flux-dev-vae.safetensors \
+RUN wget --progress=dot:giga \
+    --header="Authorization: Bearer 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" \
+    -O /downloads/models/vae/flux-dev-vae.safetensors \
     https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/vae/diffusion_pytorch_model.safetensors    
     
 # ControlNet
@@ -151,7 +152,7 @@ RUN wget -q -O /downloads/models/antelopev2/scrfd_10g_bnkps.onnx \
     
 
 # Clip Vision Model
-RUN wget -q -O /downloads/models/clip/pytorch_model.safetensors \
+RUN wget -q -O /downloads/models/clip/clip_vision.safetensors \
     https://huggingface.co/shiertier/clip_vision/resolve/main/model.safetensors 
 
 # Clone the custom nodes repositories
@@ -223,13 +224,11 @@ RUN git clone https://github.com/EnragedAntelope/ComfyUI-Doubutsu-Describer.git 
 
 RUN git clone https://github.com/WASasquatch/was-node-suite-comfyui.git /downloads/custom_nodes/was-node-suite-comfyui && \
     cd /downloads/custom_nodes/was-node-suite-comfyui && \
-    git reset --hard fe7e0884aaf0188248d9abf1e500f5116097fec1 && \
-    pip install --upgrade -r /requirements.txt --no-cache-dir   
+    git reset --hard fe7e0884aaf0188248d9abf1e500f5116097fec1
 
 RUN git clone https://github.com/yolain/ComfyUI-Easy-Use.git /downloads/custom_nodes/ComfyUI-Easy-Use && \
     cd /downloads/custom_nodes/ComfyUI-Easy-Use && \
-    git reset --hard d416ad21f0d84c04a5b7e68c59e5212525443b8e && \
-    pip install --upgrade -r /requirements.txt --no-cache-dir    
+    git reset --hard d416ad21f0d84c04a5b7e68c59e5212525443b8e
 
 # Install Required Plugins
 RUN git clone https://github.com/comfyanonymous/ComfyUI_bitsandbytes_NF4.git /downloads/custom_nodes/ComfyUI_bitsandbytes_NF4 && \
@@ -243,6 +242,9 @@ RUN git clone https://github.com/city96/ComfyUI-GGUF.git /downloads/custom_nodes
 # Stage 2: Final Setup Stage
 FROM cnstark/pytorch:2.3.1-py3.10.15-cuda12.1.0-ubuntu22.04
 
+ENV COMFYUI_PATH=/ComfyUI
+ENV COMFYUI_MODEL_PATH=/ComfyUI/models
+
 # Use bash shell with pipefail option
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -255,12 +257,33 @@ COPY --from=downloader /downloads/models /ComfyUI/models
 
 # Copy all custom nodes
 COPY --from=downloader /downloads/custom_nodes /ComfyUI/custom_nodes
+RUN cd /ComfyUI/custom_nodes/ComfyUI-Easy-Use && pip install -r requirements.txt
+RUN cd /ComfyUI/custom_nodes/ComfyUI-Impact-Pack && pip install -r requirements.txt
 
 # Install system dependencies
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt install -y \
-        fonts-dejavu-core rsync nano git jq moreutils aria2 wget mc libgoogle-perftools-dev procps && \
+        fonts-dejavu-core \
+        rsync \
+        nano \
+        git \
+        jq \
+        moreutils \
+        aria2 \
+        wget \
+        mc \
+        libgoogle-perftools-dev \
+        procps \
+        libgl1 \
+        libglib2.0-0 \
+        ffmpeg \
+        libsm6 \
+        libxext6 \
+        libxrender-dev \
+        libgl1-mesa-glx \
+        libglib2.0-0 \
+        && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
 # Install Python dependencies
@@ -276,17 +299,11 @@ RUN cd /ComfyUI && \
     pip install --upgrade -r requirements.txt --no-cache-dir
 
 # Install dependencies for all custom nodes
-RUN for dir in /ComfyUI/custom_nodes/*; do \
-        if [ -f "$dir/requirements.txt" ]; then \
-            pip install --upgrade -r "$dir/requirements.txt" --no-cache-dir; \
-        fi; \
-    done
-
-# Install dependencies for bitsandbytes and GGUF plugins
-RUN cd /ComfyUI/custom_nodes/ComfyUI_bitsandbytes_NF4 && \
-    pip install --upgrade -r requirements.txt --no-cache-dir && \
-    cd /ComfyUI/custom_nodes/ComfyUI-GGUF && \
-    pip install --upgrade -r requirements.txt --no-cache-dir
+RUN set -e && for dir in /ComfyUI/custom_nodes/*; do \
+    if [ -f "$dir/requirements.txt" ]; then \
+        pip install --upgrade -r "$dir/requirements.txt" --no-cache-dir; \
+    fi; \
+done
 
 # Copy the dryrun.sh script into the container
 COPY builder/dryrun.sh /ComfyUI/dryrun.sh
@@ -297,10 +314,13 @@ RUN /ComfyUI/dryrun.sh
 COPY flux-loras /ComfyUI/models/loras
 COPY characters /characters
 COPY src/base64_encoder.py /base64_encoder.py
-ADD src /ComfyUI/src
+ADD src/rp_handler.py /rp_handler.py
 
 # Install additional Python packages
 RUN pip install albucore==0.0.16
+
+RUN pip uninstall -y opencv-python opencv-python-headless || true && \
+    pip install --no-cache-dir opencv-python-headless
 
 # Cleanup and final setup
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
