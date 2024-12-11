@@ -8,6 +8,9 @@ import os
 import time
 from io import BytesIO
 from PIL import Image
+import websocket
+
+CLIENT_ID = str(uuid.uuid4())
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -91,134 +94,164 @@ def upload_images(images):
 
 def queue_prompt(workflow):
     logger.info("Queuing prompt")
-    prompt_id = str(uuid.uuid4())
-    payload = {"prompt": workflow, "client_id": prompt_id}
     
-    logger.debug(f"Sending prompt payload: {json.dumps(safe_log_data(payload), indent=2)}")
+    # Use the global CLIENT_ID
+    payload = {
+        "prompt": workflow,
+        "client_id": CLIENT_ID
+    }
     
     response = requests.post(f"http://{COMFY_HOST}/prompt", json=payload)
-    
-    logger.debug(f"Raw response from ComfyUI: {safe_log_data(response.text)}")
+    logger.info(f"Queue Response: {response.text}")
     
     result = response.json()
-    logger.info(f"Queue prompt response: {json.dumps(safe_log_data(result), indent=2)}")
+    if 'prompt_id' not in result:
+        logger.error(f"Invalid response format: {result}")
+        raise ValueError("No prompt_id in response")
     
-    try:
-        result = response.json()
-        logger.info(f"Queue prompt response: {json.dumps(result, indent=2)}")
-        if 'prompt_id' not in result:
-            raise KeyError(f"Expected 'prompt_id' in response, got: {result}")
-        
-        logger.info(f"Prompt queued with ID: {result['prompt_id']}")
-        return result['prompt_id']
-    except json.JSONDecodeError:
-        logger.error(f"Failed to parse response as JSON: {response.text}")
-        raise
-
+    prompt_id = result['prompt_id']
+    queue_position = result.get('number', 0)
+    logger.info(f"Prompt queued with ID: {prompt_id} at position: {queue_position}")
+    
+    return prompt_id
+    
 def get_history(prompt_id):
+    logger.info(f"=== HISTORY REQUEST START for {prompt_id} ===")
     response = requests.get(f"http://{COMFY_HOST}/history/{prompt_id}")
+    logger.info(f"Status Code: {response.status_code}")
+    logger.info(f"Raw History Response: {response.text}")
+    logger.info("=== HISTORY REQUEST END ===")
     return response.json()
 
 def wait_for_job_complete(prompt_id):
-    logger.info(f"Waiting for job with prompt_id: {prompt_id} to complete")
-    retries = 0
-    while retries < COMFY_POLLING_MAX_RETRIES:
-        history = get_history(prompt_id)
-        logger.debug(f"History for prompt {prompt_id}: {json.dumps(history, indent=2)}")
-        
-        if prompt_id in history:
-            outputs = history[prompt_id].get("outputs", {})
-            # Check for base64 output from node 38
-            if "38" in outputs and outputs["38"].get("data", None):
-                logger.info("Job completed with base64 data")
-                return outputs
-            elif any("images" in node_output for node_output in outputs.values()):
-                logger.info("Job completed with image files")
-                return outputs
-            else:
-                logger.debug(f"Job not complete. Current status: {history[prompt_id].get('status', 'unknown')}")
-        else:
-            logger.warning(f"Prompt ID {prompt_id} not found in history")
-        
-        time.sleep(COMFY_POLLING_INTERVAL_MS / 1000)
-        retries += 1
-        logger.debug(f"Retry {retries}/{COMFY_POLLING_MAX_RETRIES}")
+    logger.info(f"Waiting for job completion: {prompt_id}")
     
-    raise TimeoutError("Max retries reached while waiting for image generation")
+    try:
+        ws = setup_websocket()
+        
+        while True:
+            out = ws.recv()
+            if isinstance(out, str):
+                message = json.loads(out)
+                logger.debug(f"WebSocket message: {message}")
+                
+                if message['type'] == 'executing':
+                    data = message['data']
+                    if data['prompt_id'] == prompt_id:
+                        if data['node'] is None:
+                            # Execution is complete
+                            break
+                        else:
+                            logger.info(f"Executing node: {data['node']}")
+            else:
+                # Binary data (preview images)
+                logger.debug("Received binary preview data")
+                continue
+        
+        # Get the final results from history
+        history = get_history(prompt_id)
+        if prompt_id in history:
+            return history[prompt_id]['outputs']
+        else:
+            raise ValueError("Prompt not found in history after completion")
+            
+    except Exception as e:
+        logger.error(f"WebSocket error: {str(e)}")
+        raise
+    finally:
+        try:
+            ws.close()
+        except:
+            pass
 
 def process_output_images(outputs):
-    logger.info("Processing output images")
-    logger.debug(f"Outputs: {json.dumps(safe_log_data(outputs), indent=2)}")
- 
+    logger.info(f"Processing outputs: {outputs}")
+    
     results = {}
-    for node_id, node_output in outputs.items():
-        # Handle direct base64 output from easy imageToBase64 node
-        if node_id == "38" and "data" in node_output:
-            results[node_id] = node_output["data"]
-            logger.info(f"Processed base64 data from node {node_id}")
-            continue
-
-        # Handle traditional file-based outputs
+    # Check for direct base64 output from node 38
+    if "38" in outputs:
+        node_output = outputs["38"]
         if "images" in node_output:
+            # Handle file-based output
             for image in node_output["images"]:
-                image_path = os.path.join(COMFY_OUTPUT_PATH, image["subfolder"], image["filename"])
-                logger.debug(f"Attempting to access image at: {image_path}")
-                
-                for _ in range(5):
-                    if os.path.exists(image_path):
-                        try:
-                            with open(image_path, "rb") as image_file:
-                                encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
-                                results[node_id] = encoded_string
-                                logger.info(f"Image for node {node_id} processed successfully")
-                                break
-                        except Exception as e:
-                            logger.error(f"Error reading image file: {str(e)}")
-                    else:
-                        logger.warning(f"Image file not found: {image_path}")
-                        time.sleep(1)
-
+                image_path = os.path.join(COMFY_OUTPUT_PATH, 
+                                        image["subfolder"], 
+                                        image["filename"])
+                with open(image_path, "rb") as f:
+                    results["38"] = base64.b64encode(f.read()).decode('utf-8')
+        elif "data" in node_output:
+            # Handle direct base64 output
+            results["38"] = node_output["data"]
+    
     if not results:
-        logger.error("No images were processed")
-        logger.debug(f"Contents of {COMFY_OUTPUT_PATH}:")
-        for root, dirs, files in os.walk(COMFY_OUTPUT_PATH):
-            for file in files:
-                logger.debug(os.path.join(root, file))
-
+        raise ValueError("No output images found in response")
+    
     return results
+
+def check_comfy_status():
+    try:
+        # Check system stats
+        response = requests.get(f"http://{COMFY_HOST}/system_stats")
+        logger.debug(f"System stats: {response.text}")
+        
+        # Check object info
+        response = requests.get(f"http://{COMFY_HOST}/object_info")
+        logger.debug(f"Object info available: {list(response.json().keys())}")
+        
+        # Check queue
+        response = requests.get(f"http://{COMFY_HOST}/queue")
+        logger.debug(f"Queue status: {response.text}")
+        
+    except Exception as e:
+        logger.error(f"Error checking ComfyUI status: {str(e)}")
 
 def handler(event):
     logger.info("Handler started")
-    logger.debug(f"Received event: {json.dumps(safe_log_data(event), indent=2)}")
     try:
+        check_comfy_status()
+        
         input_data = event["input"]
-        logger.info(f"Processing input: {json.dumps(safe_log_data(input_data), indent=2)}")
         workflow = input_data.get("workflow")
         if not workflow:
-            raise ValueError("No workflow provided in the input")
+            raise ValueError("No workflow provided")
 
         images = input_data.get("images", [])
-
-        check_server(f"http://{COMFY_HOST}", COMFY_API_AVAILABLE_MAX_RETRIES, COMFY_API_AVAILABLE_INTERVAL_MS)
+        
+        # Check server and upload images
+        check_server(f"http://{COMFY_HOST}", 
+                    COMFY_API_AVAILABLE_MAX_RETRIES, 
+                    COMFY_API_AVAILABLE_INTERVAL_MS)
 
         upload_result = upload_images(images)
         if upload_result["status"] == "error":
             return upload_result
 
+        # Queue prompt and wait for completion using WebSocket
         prompt_id = queue_prompt(workflow)
         outputs = wait_for_job_complete(prompt_id)
         
+        # Process the outputs
         image_results = process_output_images(outputs)
         
         if not image_results:
             raise ValueError("No images were generated")
 
-        return {"status": "success", "images": image_results}
+        return {
+            "status": "success",
+            "images": image_results,
+            "prompt_id": prompt_id
+        }
 
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         logger.error(error_message, exc_info=True)
         return {"status": "error", "message": error_message}
+
+def setup_websocket():
+    ws = websocket.WebSocket()
+    ws.settimeout(30)  # 30 second timeout
+    ws.connect(f"ws://{COMFY_HOST}/ws?clientId={CLIENT_ID}")
+    return ws
 
 if __name__ == "__main__":
     logger.info("Starting RunPod handler")
