@@ -317,7 +317,7 @@ COPY src/base64_encoder.py /base64_encoder.py
 ADD src/rp_handler.py /rp_handler.py
 
 # Install additional Python packages
-RUN pip install albucore==0.0.16
+RUN pip install albucore==0.0.16 websocket-client
 
 RUN pip uninstall -y opencv-python opencv-python-headless || true && \
     pip install --no-cache-dir opencv-python-headless
