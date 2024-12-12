@@ -202,9 +202,9 @@ RUN git clone https://github.com/BlenderNeko/ComfyUI_ADV_CLIP_emb.git /downloads
     cd /downloads/custom_nodes/ComfyUI_ADV_CLIP_emb && \
     git reset --hard 63984deefb005da1ba90a1175e21d91040da38ab
 
-RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git /downloads/custom_nodes/ComfyUI-Impact-Pack && \
-    cd /downloads/custom_nodes/ComfyUI-Impact-Pack && \
-    git reset --hard fd6957097796d0e33092645fc56171b8dc007466
+# RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git /downloads/custom_nodes/ComfyUI-Impact-Pack && \
+#     cd /downloads/custom_nodes/ComfyUI-Impact-Pack && \
+#     git reset --hard fd6957097796d0e33092645fc56171b8dc007466
 
 RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2.git /downloads/custom_nodes/ComfyUI-SAM2 && \
     cd /downloads/custom_nodes/ComfyUI-SAM2 && \
@@ -258,7 +258,7 @@ COPY --from=downloader /downloads/models /ComfyUI/models
 # Copy all custom nodes
 COPY --from=downloader /downloads/custom_nodes /ComfyUI/custom_nodes
 RUN cd /ComfyUI/custom_nodes/ComfyUI-Easy-Use && pip install -r requirements.txt
-RUN cd /ComfyUI/custom_nodes/ComfyUI-Impact-Pack && pip install -r requirements.txt
+# RUN cd /ComfyUI/custom_nodes/ComfyUI-Impact-Pack && pip install -r requirements.txt
 
 # Install system dependencies
 RUN apt-get update && \
