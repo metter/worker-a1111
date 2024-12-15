@@ -70,55 +70,6 @@ def encode_image_to_base64(character_id: str) -> str:
         logger.error(f'Failed to encode image for character {character_id}: {str(e)}')
         raise
 
-def generate_mask(width, height, regions):
-    """
-    Generate masks for given regions. Each region is defined by a tuple of fractions 
-    that specify how the region is divided horizontally and vertically.
-
-    Args:
-        width (int): The width of the image.
-        height (int): The height of the image.
-        regions (list of tuples): Each tuple defines a region with (x_start, x_end, y_start, y_end) fractions.
-                                  Fractions are relative to the full width and height (0 to 1).
-
-    Returns:
-        list: A list of base64 encoded PNG images of the masks.
-        
-    # Example usage:
-    width, height = 1024, 768
-    regions = [
-        (0, 1, 0, 0.33),   # Top third
-        (0, 0.5, 0.33, 1), # Bottom left half
-        (0.5, 1, 0.33, 1)  # Bottom right half
-    ]
-
-    masks = generate_mask(width, height, regions)    
-    """
-    masks = []
-
-    for i, region in enumerate(regions):
-        x_start, x_end, y_start, y_end = region
-        
-        mask = Image.new('RGB', (width, height), color=(0, 0, 0))  # Initialize a black mask
-        draw = ImageDraw.Draw(mask)
-        
-        # Convert fractional coordinates to pixel values
-        left = int(x_start * width)
-        right = int(x_end * width)
-        top = int(y_start * height)
-        bottom = int(y_end * height)
-        
-        # Draw the region as a white rectangle on the mask
-        draw.rectangle([left, top, right, bottom], fill=(255, 255, 255))  # White rectangle
-        
-        # Save the mask as a PNG image in memory and encode it in base64
-        buffered = io.BytesIO()
-        mask.save(buffered, format="PNG")
-        mask_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
-        masks.append(mask_base64)
-    
-    return masks
-
 def handler(event):
     logger.info(f"{pod_tier} - Handler started")
     logger.debug(f"{pod_tier} - Event: {json.dumps(event, indent=2)}")
@@ -135,18 +86,6 @@ def handler(event):
             len(input["alwayson_scripts"]["ControlNet"]["args"]) > 0):
             
             logger.info("Valid ControlNet request detected")
-            
-            if "division" in input:
-                divisions = input["division"]
-                width = int(input.get("width", 1360))
-                height = int(input.get("height", 768))
-                
-                masks = generate_mask(width, height, divisions)
-                
-                for i, args in enumerate(input["alwayson_scripts"]["ControlNet"]["args"]):
-                    if i < len(masks):
-                        args["effective_region_mask"] = masks[i]
-                        logger.info(f"Assigned mask to ControlNet arg {i}")
             
             for i, controlnet_args in enumerate(input["alwayson_scripts"]["ControlNet"]["args"]):
                 if "image" in controlnet_args:
