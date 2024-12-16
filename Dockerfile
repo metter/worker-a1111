@@ -312,7 +312,6 @@ RUN /ComfyUI/dryrun.sh
 
 # Copy additional resources
 COPY flux-loras /ComfyUI/models/loras
-COPY characters /characters
 COPY src/base64_encoder.py /base64_encoder.py
 ADD src/rp_handler.py /rp_handler.py
 
