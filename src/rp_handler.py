@@ -1,3 +1,4 @@
+import sys
 import runpod
 import json
 import requests
@@ -11,7 +12,15 @@ from PIL import Image
 import websocket
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+# Configure logging to ensure visibility in the console and optionally a log file
+logging.basicConfig(
+    level=logging.DEBUG,  # Capture all logs (DEBUG and above)
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stderr),
+    ]
+)
+
 logger = logging.getLogger(__name__)
 
 COMFY_HOST = "127.0.0.1:8188"
