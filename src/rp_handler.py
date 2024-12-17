@@ -160,35 +160,86 @@ def wait_for_job_complete(prompt_id, client_id):
             ws.close()
 
 def process_output_images(outputs):
-    logger.info(f"Processing outputs: {outputs}")
+    logger.info("Starting to process output images.")
+    logger.debug(f"Received outputs: {outputs}")
     results = {}
-
+    
+    # Log the contents of COMFY_OUTPUT_PATH
+    try:
+        logger.info(f"Listing contents of COMFY_OUTPUT_PATH: {COMFY_OUTPUT_PATH}")
+        output_files = os.listdir(COMFY_OUTPUT_PATH)
+        logger.info(f"Files in '{COMFY_OUTPUT_PATH}': {output_files}")
+    except Exception as e:
+        logger.error(f"Failed to list contents of {COMFY_OUTPUT_PATH}: {str(e)}")
+        raise
+    
     # Iterate over all nodes in outputs
     for node_id, node_output in outputs.items():
+        logger.debug(f"Processing node ID: {node_id}")
         # Check if this node has images
         if "images" in node_output and node_output["images"]:
+            logger.info(f"Node {node_id} contains images: {node_output['images']}")
             for image in node_output["images"]:
-                image_path = os.path.join(
-                    COMFY_OUTPUT_PATH,
-                    image.get("subfolder", ""),
-                    image["filename"]
-                )
+                subfolder = image.get("subfolder", "")
+                filename = image.get("filename", "")
+                image_path = os.path.join(COMFY_OUTPUT_PATH, subfolder, filename)
+                logger.debug(f"Constructed image path: {image_path}")
+                
+                # Log existence of the image file
                 if not os.path.exists(image_path):
-                    logger.error(f"Image not found at {image_path}")
+                    logger.error(f"Image not found at path: {image_path}")
                     continue
-                with open(image_path, "rb") as f:
-                    # Store the base64-encoded image using the node_id as a key
-                    results[node_id] = base64.b64encode(f.read()).decode('utf-8')
-
+                else:
+                    logger.info(f"Image found at path: {image_path}")
+                
+                # Optional: Wait briefly to ensure the file is fully written
+                time.sleep(0.5)
+                
+                # Attempt to open and read the image file
+                try:
+                    with open(image_path, "rb") as f:
+                        image_data = f.read()
+                        encoded_image = base64.b64encode(image_data).decode('utf-8')
+                        results[node_id] = encoded_image
+                        logger.info(f"Successfully processed image: {image_path}")
+                except Exception as e:
+                    logger.error(f"Error reading image {image_path}: {str(e)}")
+        
         # If the node output doesn't contain images but maybe has a direct base64 "data" field
         elif "data" in node_output:
-            # This could be a fallback if some node returns direct data
-            results[node_id] = node_output["data"]
-
-    # If we found no images at all, raise an error
+            logger.info(f"Node {node_id} contains direct data.")
+            data = node_output["data"]
+            if isinstance(data, str) and ";base64," in data:
+                # Assuming data is a base64 string prefixed with metadata
+                try:
+                    # Optionally, you can split the metadata if needed
+                    base64_data = data.split(";base64,")[-1]
+                    # Validate if it's a proper base64 string
+                    if len(base64_data) % 4 != 0:
+                        base64_data += "=" * (4 - len(base64_data) % 4)
+                    # Attempt to decode to ensure it's valid
+                    base64.b64decode(base64_data)
+                    results[node_id] = base64_data
+                    logger.info(f"Successfully processed base64 data for node {node_id}.")
+                except Exception as e:
+                    logger.error(f"Invalid base64 data in node {node_id}: {str(e)}")
+            else:
+                # If data is already a pure base64 string
+                try:
+                    base64.b64decode(data)
+                    results[node_id] = data
+                    logger.info(f"Successfully processed base64 data for node {node_id}.")
+                except Exception as e:
+                    logger.error(f"Invalid base64 data in node {node_id}: {str(e)}")
+        else:
+            logger.warning(f"Node {node_id} does not contain images or data.")
+    
+    # Final check to ensure some images were processed
     if not results:
+        logger.error("No output images found in response.")
         raise ValueError("No output images found in response")
-
+    
+    logger.info(f"Processed images: {list(results.keys())}")
     return results
 
 def check_comfy_status():
