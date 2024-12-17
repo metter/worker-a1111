@@ -10,18 +10,7 @@ import time
 from io import BytesIO
 from PIL import Image
 import websocket
-
-# Set up logging
-# Configure logging to ensure visibility in the console and optionally a log file
-logging.basicConfig(
-    level=logging.DEBUG,  # Capture all logs (DEBUG and above)
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stderr),
-    ]
-)
-
-logger = logging.getLogger(__name__)
+from runpod.serverless.utils import rp_logger
 
 COMFY_HOST = "127.0.0.1:8188"
 COMFY_API_AVAILABLE_INTERVAL_MS = 50
@@ -51,12 +40,12 @@ def check_server(url, retries=500, delay=50):
         try:
             response = requests.get(url)
             if response.status_code == 200:
-                logger.info("ComfyUI API is reachable")
+                rp_logger.info("ComfyUI API is reachable")
                 return True
         except requests.RequestException as e:
-            logger.warning(f"Attempt {i+1}/{retries}: Server not ready. Error: {str(e)}")
+            rp_logger.warning(f"Attempt {i+1}/{retries}: Server not ready. Error: {str(e)}")
         time.sleep(delay / 1000)
-    logger.error(f"Failed to connect to server at {url} after {retries} attempts.")
+    rp_logger.error(f"Failed to connect to server at {url} after {retries} attempts.")
     return False
 
 def upload_images(images):
@@ -66,7 +55,7 @@ def upload_images(images):
     responses = []
     upload_errors = []
 
-    logger.info("Uploading image(s)")
+    rp_logger.info("Uploading image(s)")
 
     for image in images:
         name = image["name"]
@@ -85,14 +74,14 @@ def upload_images(images):
             responses.append(f"Successfully uploaded {name}")
 
     if upload_errors:
-        logger.error("Image(s) upload completed with errors")
+        rp_logger.error("Image(s) upload completed with errors")
         return {
             "status": "error",
             "message": "Some images failed to upload",
             "details": upload_errors,
         }
 
-    logger.info("Image(s) upload completed successfully")
+    rp_logger.info("Image(s) upload completed successfully")
     return {
         "status": "success",
         "message": "All images uploaded successfully",
@@ -100,7 +89,7 @@ def upload_images(images):
     }
 
 def queue_prompt(workflow, client_id):
-    logger.info("Queuing prompt")
+    rp_logger.info("Queuing prompt")
 
     payload = {
         "prompt": workflow,
@@ -108,29 +97,29 @@ def queue_prompt(workflow, client_id):
     }
     
     response = requests.post(f"http://{COMFY_HOST}/prompt", json=payload)
-    logger.info(f"Queue Response: {response.text}")
+    rp_logger.info(f"Queue Response: {response.text}")
     
     result = response.json()
     if 'prompt_id' not in result:
-        logger.error(f"Invalid response format: {result}")
+        rp_logger.error(f"Invalid response format: {result}")
         raise ValueError("No prompt_id in response")
     
     prompt_id = result['prompt_id']
     queue_position = result.get('number', 0)
-    logger.info(f"Prompt queued with ID: {prompt_id} at position: {queue_position}")
+    rp_logger.info(f"Prompt queued with ID: {prompt_id} at position: {queue_position}")
     
     return prompt_id
 
 def get_history(prompt_id):
-    logger.info(f"=== HISTORY REQUEST START for {prompt_id} ===")
+    rp_logger.info(f"=== HISTORY REQUEST START for {prompt_id} ===")
     response = requests.get(f"http://{COMFY_HOST}/history/{prompt_id}")
-    logger.info(f"Status Code: {response.status_code}")
-    logger.info(f"Raw History Response: {response.text}")
-    logger.info("=== HISTORY REQUEST END ===")
+    rp_logger.info(f"Status Code: {response.status_code}")
+    rp_logger.info(f"Raw History Response: {response.text}")
+    rp_logger.info("=== HISTORY REQUEST END ===")
     return response.json()
 
 def wait_for_job_complete(prompt_id, client_id):
-    logger.info(f"Waiting for job completion: {prompt_id}")
+    rp_logger.info(f"Waiting for job completion: {prompt_id}")
     ws = None
     try:
         ws = setup_websocket(client_id)
@@ -139,7 +128,7 @@ def wait_for_job_complete(prompt_id, client_id):
             out = ws.recv()
             if isinstance(out, str):
                 message = json.loads(out)
-                logger.debug(f"WebSocket message: {message}")
+                rp_logger.debug(f"WebSocket message: {message}")
 
                 if message.get('type') == 'executing':
                     data = message.get('data', {})
@@ -148,10 +137,10 @@ def wait_for_job_complete(prompt_id, client_id):
                             # Execution is complete
                             break
                         else:
-                            logger.info(f"Executing node: {data['node']}")
+                            rp_logger.info(f"Executing node: {data['node']}")
             else:
                 # Binary data (preview images)
-                logger.debug("Received binary preview data")
+                rp_logger.debug("Received binary preview data")
                 continue
 
         # Get the final results from history
@@ -162,44 +151,44 @@ def wait_for_job_complete(prompt_id, client_id):
             raise ValueError("Prompt not found in history after completion")
 
     except Exception as e:
-        logger.error(f"WebSocket error: {str(e)}", exc_info=True)
+        rp_logger.error(f"WebSocket error: {str(e)}", exc_info=True)
         raise
     finally:
         if ws:
             ws.close()
 
 def process_output_images(outputs):
-    logger.info("Starting to process output images.")
-    logger.debug(f"Received outputs: {outputs}")
+    rp_logger.info("Starting to process output images.")
+    rp_logger.debug(f"Received outputs: {outputs}")
     results = {}
     
     # Log the contents of COMFY_OUTPUT_PATH
     try:
-        logger.info(f"Listing contents of COMFY_OUTPUT_PATH: {COMFY_OUTPUT_PATH}")
+        rp_logger.info(f"Listing contents of COMFY_OUTPUT_PATH: {COMFY_OUTPUT_PATH}")
         output_files = os.listdir(COMFY_OUTPUT_PATH)
-        logger.info(f"Files in '{COMFY_OUTPUT_PATH}': {output_files}")
+        rp_logger.info(f"Files in '{COMFY_OUTPUT_PATH}': {output_files}")
     except Exception as e:
-        logger.error(f"Failed to list contents of {COMFY_OUTPUT_PATH}: {str(e)}")
+        rp_logger.error(f"Failed to list contents of {COMFY_OUTPUT_PATH}: {str(e)}")
         raise
     
     # Iterate over all nodes in outputs
     for node_id, node_output in outputs.items():
-        logger.debug(f"Processing node ID: {node_id}")
+        rp_logger.debug(f"Processing node ID: {node_id}")
         # Check if this node has images
         if "images" in node_output and node_output["images"]:
-            logger.info(f"Node {node_id} contains images: {node_output['images']}")
+            rp_logger.info(f"Node {node_id} contains images: {node_output['images']}")
             for image in node_output["images"]:
                 subfolder = image.get("subfolder", "")
                 filename = image.get("filename", "")
                 image_path = os.path.join(COMFY_OUTPUT_PATH, subfolder, filename)
-                logger.debug(f"Constructed image path: {image_path}")
+                rp_logger.debug(f"Constructed image path: {image_path}")
                 
                 # Log existence of the image file
                 if not os.path.exists(image_path):
-                    logger.error(f"Image not found at path: {image_path}")
+                    rp_logger.error(f"Image not found at path: {image_path}")
                     continue
                 else:
-                    logger.info(f"Image found at path: {image_path}")
+                    rp_logger.info(f"Image found at path: {image_path}")
                 
                 # Optional: Wait briefly to ensure the file is fully written
                 time.sleep(0.5)
@@ -210,13 +199,13 @@ def process_output_images(outputs):
                         image_data = f.read()
                         encoded_image = base64.b64encode(image_data).decode('utf-8')
                         results[node_id] = encoded_image
-                        logger.info(f"Successfully processed image: {image_path}")
+                        rp_logger.info(f"Successfully processed image: {image_path}")
                 except Exception as e:
-                    logger.error(f"Error reading image {image_path}: {str(e)}")
+                    rp_logger.error(f"Error reading image {image_path}: {str(e)}")
         
         # If the node output doesn't contain images but maybe has a direct base64 "data" field
         elif "data" in node_output:
-            logger.info(f"Node {node_id} contains direct data.")
+            rp_logger.info(f"Node {node_id} contains direct data.")
             data = node_output["data"]
             if isinstance(data, str) and ";base64," in data:
                 # Assuming data is a base64 string prefixed with metadata
@@ -229,41 +218,41 @@ def process_output_images(outputs):
                     # Attempt to decode to ensure it's valid
                     base64.b64decode(base64_data)
                     results[node_id] = base64_data
-                    logger.info(f"Successfully processed base64 data for node {node_id}.")
+                    rp_logger.info(f"Successfully processed base64 data for node {node_id}.")
                 except Exception as e:
-                    logger.error(f"Invalid base64 data in node {node_id}: {str(e)}")
+                    rp_logger.error(f"Invalid base64 data in node {node_id}: {str(e)}")
             else:
                 # If data is already a pure base64 string
                 try:
                     base64.b64decode(data)
                     results[node_id] = data
-                    logger.info(f"Successfully processed base64 data for node {node_id}.")
+                    rp_logger.info(f"Successfully processed base64 data for node {node_id}.")
                 except Exception as e:
-                    logger.error(f"Invalid base64 data in node {node_id}: {str(e)}")
+                    rp_logger.error(f"Invalid base64 data in node {node_id}: {str(e)}")
         else:
-            logger.warning(f"Node {node_id} does not contain images or data.")
+            rp_logger.warning(f"Node {node_id} does not contain images or data.")
     
     # Final check to ensure some images were processed
     if not results:
-        logger.error("No output images found in response.")
+        rp_logger.error("No output images found in response.")
         raise ValueError("No output images found in response")
     
-    logger.info(f"Processed images: {list(results.keys())}")
+    rp_logger.info(f"Processed images: {list(results.keys())}")
     return results
 
 def check_comfy_status():
     try:
         response = requests.get(f"http://{COMFY_HOST}/system_stats")
-        logger.debug(f"System stats: {response.text}")
+        rp_logger.debug(f"System stats: {response.text}")
 
         response = requests.get(f"http://{COMFY_HOST}/object_info")
-        logger.debug(f"Object info available: {list(response.json().keys())}")
+        rp_logger.debug(f"Object info available: {list(response.json().keys())}")
 
         response = requests.get(f"http://{COMFY_HOST}/queue")
-        logger.debug(f"Queue status: {response.text}")
+        rp_logger.debug(f"Queue status: {response.text}")
 
     except Exception as e:
-        logger.error(f"Error checking ComfyUI status: {str(e)}")
+        rp_logger.error(f"Error checking ComfyUI status: {str(e)}")
 
 def setup_websocket(client_id):
     ws = websocket.WebSocket()
@@ -272,11 +261,11 @@ def setup_websocket(client_id):
     return ws
 
 def handler(event):
-    logger.info("Handler started")
+    rp_logger.info("Handler started")
     try:
         # Generate a unique client ID for each request
         client_id = str(uuid.uuid4())
-        logger.debug(f"Generated unique client_id: {client_id}")
+        rp_logger.debug(f"Generated unique client_id: {client_id}")
 
         check_comfy_status()
         
@@ -314,10 +303,10 @@ def handler(event):
 
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
-        logger.error(error_message, exc_info=True)
+        rp_logger.error(error_message, exc_info=True)
         return {"status": "error", "message": error_message}
 
 
 if __name__ == "__main__":
-    logger.info("Starting RunPod handler")
+    rp_logger.info("Starting RunPod handler")
     runpod.serverless.start({"handler": handler})
