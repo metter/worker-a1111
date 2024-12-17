@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exec > >(tee /dev/fd/1) 2>&1
+
 echo "Worker Initiated"
 
 echo "Starting WebUI API"
