@@ -336,8 +336,6 @@ ENV COMFYUI_HOST=0.0.0.0
 ENV COMFYUI_PORT=8188
 
 # Set permissions and specify the command to run
-COPY src/aws_setup.sh /aws_setup.sh
 COPY src/start.sh /start.sh
 RUN chmod +x /start.sh
-RUN chmod +x /aws_setup.sh
 CMD ["/start.sh"]
