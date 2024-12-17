@@ -57,7 +57,10 @@ RUN wget --progress=dot:giga -O /downloads/models/clip/t5xxl_fp8_e4m3fn.safetens
     https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors
 
 RUN wget --progress=dot:giga -O /downloads/models/clip/t5xxl_fp16.safetensors \
-    https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors    
+    https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors 
+
+RUN wget --progress=dot:giga -O /downloads/models/clip/ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors \
+    https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14/resolve/main/ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors       
     
 # VAE
 RUN wget --progress=dot:giga -O /downloads/models/vae/flux-schnell-vae.safetensors \
@@ -267,6 +270,7 @@ RUN apt-get update && \
         fonts-dejavu-core \
         rsync \
         nano \
+        screen \
         git \
         jq \
         moreutils \
@@ -332,6 +336,8 @@ ENV COMFYUI_HOST=0.0.0.0
 ENV COMFYUI_PORT=8188
 
 # Set permissions and specify the command to run
+COPY src/aws_setup.sh /aws_setup.sh
 COPY src/start.sh /start.sh
 RUN chmod +x /start.sh
+RUN chmod +x /aws_setup.sh
 CMD ["/start.sh"]

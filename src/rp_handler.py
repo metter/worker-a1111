@@ -163,11 +163,10 @@ def process_output_images(outputs):
     logger.info(f"Processing outputs: {outputs}")
     results = {}
 
-    # Handle node "38" output if present
-    if "38" in outputs:
-        node_output = outputs["38"]
-        if "images" in node_output:
-            # File-based output
+    # Iterate over all nodes in outputs
+    for node_id, node_output in outputs.items():
+        # Check if this node has images
+        if "images" in node_output and node_output["images"]:
             for image in node_output["images"]:
                 image_path = os.path.join(
                     COMFY_OUTPUT_PATH,
@@ -178,11 +177,15 @@ def process_output_images(outputs):
                     logger.error(f"Image not found at {image_path}")
                     continue
                 with open(image_path, "rb") as f:
-                    results["38"] = base64.b64encode(f.read()).decode('utf-8')
-        elif "data" in node_output:
-            # Direct base64 output
-            results["38"] = node_output["data"]
+                    # Store the base64-encoded image using the node_id as a key
+                    results[node_id] = base64.b64encode(f.read()).decode('utf-8')
 
+        # If the node output doesn't contain images but maybe has a direct base64 "data" field
+        elif "data" in node_output:
+            # This could be a fallback if some node returns direct data
+            results[node_id] = node_output["data"]
+
+    # If we found no images at all, raise an error
     if not results:
         raise ValueError("No output images found in response")
 
