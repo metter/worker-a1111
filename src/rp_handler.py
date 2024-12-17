@@ -59,7 +59,7 @@ def check_server(url, retries=500, delay=50):
     logger.error(f"Failed to connect to server at {url} after {retries} attempts.")
     return False
 
-def upload_images(images):
+def upload_images(images): 
     if not images:
         return {"status": "success", "message": "No images to upload", "details": []}
 
