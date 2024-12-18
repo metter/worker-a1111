@@ -139,7 +139,7 @@ def wait_for_job_complete(prompt_id, client_id):
             out = ws.recv()
             if isinstance(out, str):
                 message = json.loads(out)
-                logger.debug(f"WebSocket message: {message}")
+                logger.info(f"WebSocket message: {message}")
 
                 if message.get('type') == 'executing':
                     data = message.get('data', {})
@@ -151,7 +151,7 @@ def wait_for_job_complete(prompt_id, client_id):
                             logger.info(f"Executing node: {data['node']}")
             else:
                 # Binary data (preview images)
-                logger.debug("Received binary preview data")
+                logger.info("Received binary preview data")
                 continue
 
         # Get the final results from history
@@ -170,7 +170,7 @@ def wait_for_job_complete(prompt_id, client_id):
 
 def process_output_images(outputs):
     logger.info("Starting to process output images.")
-    logger.debug(f"Received outputs: {outputs}")
+    logger.info(f"Received outputs: {outputs}")
     results = {}
     
     # Log the contents of COMFY_OUTPUT_PATH
@@ -184,7 +184,7 @@ def process_output_images(outputs):
     
     # Iterate over all nodes in outputs
     for node_id, node_output in outputs.items():
-        logger.debug(f"Processing node ID: {node_id}")
+        logger.info(f"Processing node ID: {node_id}")
         # Check if this node has images
         if "images" in node_output and node_output["images"]:
             logger.info(f"Node {node_id} contains images: {node_output['images']}")
@@ -192,7 +192,7 @@ def process_output_images(outputs):
                 subfolder = image.get("subfolder", "")
                 filename = image.get("filename", "")
                 image_path = os.path.join(COMFY_OUTPUT_PATH, subfolder, filename)
-                logger.debug(f"Constructed image path: {image_path}")
+                logger.info(f"Constructed image path: {image_path}")
                 
                 # Log existence of the image file
                 if not os.path.exists(image_path):
@@ -254,13 +254,13 @@ def process_output_images(outputs):
 def check_comfy_status():
     try:
         response = requests.get(f"http://{COMFY_HOST}/system_stats")
-        logger.debug(f"System stats: {response.text}")
+        logger.info(f"System stats: {response.text}")
 
         response = requests.get(f"http://{COMFY_HOST}/object_info")
-        logger.debug(f"Object info available: {list(response.json().keys())}")
+        logger.info(f"Object info available: {list(response.json().keys())}")
 
         response = requests.get(f"http://{COMFY_HOST}/queue")
-        logger.debug(f"Queue status: {response.text}")
+        logger.info(f"Queue status: {response.text}")
 
     except Exception as e:
         logger.error(f"Error checking ComfyUI status: {str(e)}")
@@ -276,7 +276,7 @@ def handler(event):
     try:
         # Generate a unique client ID for each request
         client_id = str(uuid.uuid4())
-        logger.debug(f"Generated unique client_id: {client_id}")
+        logger.info(f"Generated unique client_id: {client_id}")
 
         check_comfy_status()
         
@@ -319,5 +319,5 @@ def handler(event):
 
 
 if __name__ == "__main__":
-    logger.info("Starting RunPod handler")
+    logger.info("Starting RunPod handler rp_handler script")
     runpod.serverless.start({"handler": handler})

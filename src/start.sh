@@ -13,4 +13,4 @@ echo "Starting RunPod Handler"
 # Start handler in foreground with explicit output redirection
 python -u /rp_handler.py 2>&1
 
-echo "RunPod Handler has exited"
+echo "RunPod Handler has terminated"
