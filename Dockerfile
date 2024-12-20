@@ -37,12 +37,6 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /downloads/ComfyUI &
 # Download the required models
 WORKDIR /downloads/models
 
-# Download the flux1-schnell-fp8.safetensors model with authentication
-RUN wget --progress=dot:giga \
-    --header="Authorization: Bearer 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" \
-    -O /downloads/models/unet/flux1-schnell-fp8.safetensors \
-    https://huggingface.co/Comfy-Org/flux1-schnell/resolve/main/flux1-schnell-fp8.safetensors
-
 # Download the flux1-dev.safetensors model with authentication
 RUN wget --progress=dot:giga \
     --header="Authorization: Bearer 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" \
@@ -53,19 +47,10 @@ RUN wget --progress=dot:giga \
 RUN wget --progress=dot:giga -O /downloads/models/clip/clip_l.safetensors \
     https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors
 
-RUN wget --progress=dot:giga -O /downloads/models/clip/t5xxl_fp8_e4m3fn.safetensors \
-    https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors
-
 RUN wget --progress=dot:giga -O /downloads/models/clip/t5xxl_fp16.safetensors \
-    https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors 
-
-RUN wget --progress=dot:giga -O /downloads/models/clip/ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors \
-    https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14/resolve/main/ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors       
+    https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors      
     
-# VAE
-RUN wget --progress=dot:giga -O /downloads/models/vae/flux-schnell-vae.safetensors \
-    https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/vae/diffusion_pytorch_model.safetensors  
-    
+# VAE  
 RUN wget --progress=dot:giga \
     --header="Authorization: Bearer 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" \
     -O /downloads/models/vae/flux-dev-vae.safetensors \
@@ -74,10 +59,6 @@ RUN wget --progress=dot:giga \
 # ControlNet
 RUN wget --progress=dot:giga -O /downloads/models/controlnet/FLUX-1-dev-ControlNet-Union-Pro.safetensors \
     https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro/resolve/main/diffusion_pytorch_model.safetensors
-
-# Clip Vision
-RUN wget --progress=dot:giga -O /downloads/models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors   
 
 # Grounding DINO
 RUN wget --progress=dot:giga -O /downloads/models/grounding-dino/groundingdino_swinb_cogcoor.pth \
@@ -153,11 +134,6 @@ RUN wget -q -O /downloads/models/antelopev2/glintr100.onnx \
 RUN wget -q -O /downloads/models/antelopev2/scrfd_10g_bnkps.onnx \
     https://huggingface.co/camenduru/show/resolve/main/insightface/models/antelopev2/scrfd_10g_bnkps.onnx  
     
-
-# Clip Vision Model
-RUN wget -q -O /downloads/models/clip/clip_vision.safetensors \
-    https://huggingface.co/shiertier/clip_vision/resolve/main/model.safetensors 
-
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
 
@@ -204,11 +180,7 @@ RUN git clone https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git /downl
 RUN git clone https://github.com/BlenderNeko/ComfyUI_ADV_CLIP_emb.git /downloads/custom_nodes/ComfyUI_ADV_CLIP_emb && \
     cd /downloads/custom_nodes/ComfyUI_ADV_CLIP_emb && \
     git reset --hard 63984deefb005da1ba90a1175e21d91040da38ab
-
-# RUN git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git /downloads/custom_nodes/ComfyUI-Impact-Pack && \
-#     cd /downloads/custom_nodes/ComfyUI-Impact-Pack && \
-#     git reset --hard fd6957097796d0e33092645fc56171b8dc007466
-
+    
 RUN git clone https://github.com/neverbiasu/ComfyUI-SAM2.git /downloads/custom_nodes/ComfyUI-SAM2 && \
     cd /downloads/custom_nodes/ComfyUI-SAM2 && \
     git reset --hard 61a97f2fe8094a1da48b4313394a1e18b529cccf   
