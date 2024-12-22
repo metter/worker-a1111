@@ -177,3 +177,4 @@ style*
 build_output.txt
 *.zoneidentifier
 flux-loras
+._.DS_Store
