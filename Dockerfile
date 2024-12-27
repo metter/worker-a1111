@@ -60,6 +60,15 @@ RUN wget --progress=dot:giga \
 RUN wget --progress=dot:giga -O /downloads/models/controlnet/FLUX-1-dev-ControlNet-Union-Pro.safetensors \
     https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro/resolve/main/diffusion_pytorch_model.safetensors
 
+    # ControlNet Auxiliary Models
+RUN mkdir -p /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators
+RUN wget --progress=dot:giga -O /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators/body_pose_model.pth \
+    https://huggingface.co/lllyasviel/Annotators/resolve/main/body_pose_model.pth
+RUN wget --progress=dot:giga -O /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators/hand_pose_model.pth \
+    https://huggingface.co/lllyasviel/Annotators/resolve/main/hand_pose_model.pth
+RUN wget --progress=dot:giga -O /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators/facenet.pth \
+    https://huggingface.co/lllyasviel/Annotators/resolve/main/facenet.pth
+
 # Grounding DINO
 RUN wget --progress=dot:giga -O /downloads/models/grounding-dino/groundingdino_swinb_cogcoor.pth \
     https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swinb_cogcoor.pth 
