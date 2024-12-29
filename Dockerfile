@@ -20,7 +20,8 @@ RUN mkdir -p /downloads/models/sams \
     /downloads/models/loras \
     /downloads/models/clip_vision \
     /downloads/custom_nodes \
-    /downloads/models/unet
+    /downloads/models/unet \
+    /downloads/models/xlabs/ipadapters 
 
 # Set the working directory for downloading
 WORKDIR /downloads   
@@ -59,6 +60,15 @@ RUN wget --progress=dot:giga \
 # ControlNet
 RUN wget --progress=dot:giga -O /downloads/models/controlnet/FLUX-1-dev-ControlNet-Union-Pro.safetensors \
     https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro/resolve/main/diffusion_pytorch_model.safetensors
+
+    # ControlNet Auxiliary Models
+RUN mkdir -p /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators
+RUN wget --progress=dot:giga -O /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators/body_pose_model.pth \
+    https://huggingface.co/lllyasviel/Annotators/resolve/main/body_pose_model.pth
+RUN wget --progress=dot:giga -O /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators/hand_pose_model.pth \
+    https://huggingface.co/lllyasviel/Annotators/resolve/main/hand_pose_model.pth
+RUN wget --progress=dot:giga -O /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators/facenet.pth \
+    https://huggingface.co/lllyasviel/Annotators/resolve/main/facenet.pth
 
 # Grounding DINO
 RUN wget --progress=dot:giga -O /downloads/models/grounding-dino/groundingdino_swinb_cogcoor.pth \
@@ -106,7 +116,11 @@ RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-lora-756
     https://huggingface.co/qresearch/doubutsu-2b-lora-756-docci/resolve/main/adapter_model.safetensors  
 
 RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-lora-756-docci/adapter_config.json  \
-    https://huggingface.co/qresearch/doubutsu-2b-lora-756-docci/resolve/main/adapter_config.json     
+    https://huggingface.co/qresearch/doubutsu-2b-lora-756-docci/resolve/main/adapter_config.json 
+    
+#ip-adapters
+RUN wget --progress=dot:giga -O /downloads/models/xlabs/ipadapters/ip_adapter.safetensors  \
+    https://huggingface.co/XLabs-AI/flux-ip-adapter/resolve/main/ip_adapter.safetensors   
 
 # Additional SAM and Grounding DINO Models
 RUN wget -q -O /downloads/models/sam2/sam2_hiera_tiny.pt \
@@ -205,6 +219,10 @@ RUN git clone https://github.com/yolain/ComfyUI-Easy-Use.git /downloads/custom_n
     cd /downloads/custom_nodes/ComfyUI-Easy-Use && \
     git reset --hard d416ad21f0d84c04a5b7e68c59e5212525443b8e
 
+RUN git clone https://github.com/XLabs-AI/x-flux-comfyui.git /downloads/custom_nodes/x-flux-comfyui && \
+    cd /downloads/custom_nodes/x-flux-comfyui && \
+    git reset --hard 00328556efc9472410d903639dc9e68a8471f7ac
+
 # Install Required Plugins
 RUN git clone https://github.com/comfyanonymous/ComfyUI_bitsandbytes_NF4.git /downloads/custom_nodes/ComfyUI_bitsandbytes_NF4 && \
     cd /downloads/custom_nodes/ComfyUI_bitsandbytes_NF4 && \
@@ -273,6 +291,10 @@ COPY builder/manual_comfyui_start.sh /manual_comfyui_start.sh
 # Install dependencies for ComfyUI
 RUN cd /ComfyUI && \
     pip install --upgrade -r requirements.txt --no-cache-dir
+
+# Setup flux ip-adapter
+RUN cd /ComfyUI/custom_nodes/x-flux-comfyui && \
+    python setup.py
 
 # Install dependencies for all custom nodes
 RUN set -e && for dir in /ComfyUI/custom_nodes/*; do \
