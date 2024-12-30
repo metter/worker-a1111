@@ -18,7 +18,7 @@ RUN mkdir -p /downloads/models/sams \
     /downloads/models/controlnet \
     /downloads/models/ipadapter \
     /downloads/models/loras \
-    /downloads/models/clip_vision \
+    /downloads/models/clipvision \
     /downloads/custom_nodes \
     /downloads/models/unet \
     /downloads/models/xlabs/ipadapters 
@@ -61,7 +61,7 @@ RUN wget --progress=dot:giga \
 RUN wget --progress=dot:giga -O /downloads/models/controlnet/FLUX-1-dev-ControlNet-Union-Pro.safetensors \
     https://huggingface.co/Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro/resolve/main/diffusion_pytorch_model.safetensors
 
-    # ControlNet Auxiliary Models
+# ControlNet Auxiliary Models
 RUN mkdir -p /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators
 RUN wget --progress=dot:giga -O /ComfyUI/custom_nodes/comfyui_controlnet_aux/ckpts/lllyasviel/Annotators/body_pose_model.pth \
     https://huggingface.co/lllyasviel/Annotators/resolve/main/body_pose_model.pth
@@ -120,7 +120,11 @@ RUN wget --progress=dot:giga -O /downloads/models/qresearch/doubutsu-2b-lora-756
     
 #ip-adapters
 RUN wget --progress=dot:giga -O /downloads/models/xlabs/ipadapters/ip_adapter.safetensors  \
-    https://huggingface.co/XLabs-AI/flux-ip-adapter/resolve/main/ip_adapter.safetensors   
+    https://huggingface.co/XLabs-AI/flux-ip-adapter-v2/resolve/main/ip_adapter.safetensors  
+
+#clipvision
+RUN wget --progress=dot:giga -O /downloads/models/clipvision/model.safetensors  \
+    https://huggingface.co/openai/clip-vit-large-patch14/blob/main/model.safetensors  
 
 # Additional SAM and Grounding DINO Models
 RUN wget -q -O /downloads/models/sam2/sam2_hiera_tiny.pt \
