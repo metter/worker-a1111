@@ -152,6 +152,11 @@ RUN wget -q -O /downloads/models/antelopev2/glintr100.onnx \
 RUN wget -q -O /downloads/models/antelopev2/scrfd_10g_bnkps.onnx \
     https://huggingface.co/camenduru/show/resolve/main/insightface/models/antelopev2/scrfd_10g_bnkps.onnx  
     
+# Download the comfyui-api binary
+ARG API_VERSION=1.6.1
+ADD https://github.com/SaladTechnologies/comfyui-api/releases/download/${API_VERSION}/comfyui-api /downloads/comfyui-api
+RUN chmod +x /downloads/comfyui-api
+
 # Clone the custom nodes repositories
 WORKDIR /downloads/custom_nodes
 
@@ -241,12 +246,21 @@ FROM cnstark/pytorch:2.3.1-py3.10.15-cuda12.1.0-ubuntu22.04
 
 ENV COMFYUI_PATH=/ComfyUI
 ENV COMFYUI_MODEL_PATH=/ComfyUI/models
+ENV COMFYUI_HOST=0.0.0.0
+ENV COMFYUI_PORT=8188
+ENV PORT=3000
+ENV DIRECT_ADDRESS=127.0.0.1
+ENV COMFYUI_PORT_HOST=8188
+
 
 # Use bash shell with pipefail option
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set the working directory
 WORKDIR /
+
+# Copy comfyui-api binary from the downloader stage
+COPY --from=downloader /downloads/comfyui-api /ComfyUI/comfyui-api
 
 # Copy files from the downloader stage
 COPY --from=downloader /downloads/ComfyUI /ComfyUI
@@ -336,4 +350,4 @@ ENV COMFYUI_PORT=8188
 # Set permissions and specify the command to run
 COPY src/start.sh /start.sh
 RUN chmod +x /start.sh
-CMD ["/start.sh"]
+CMD ["/ComfyUI/comfyui-api"]
