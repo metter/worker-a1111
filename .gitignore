@@ -176,3 +176,5 @@ styles
 test*
 style*
 build_output.txt
+flux-loras/sync.ffs_db
+._.DS_Store
