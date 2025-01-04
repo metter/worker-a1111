@@ -10,6 +10,7 @@ import io
 import sys
 import numpy as np
 import logging
+import boto3
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,6 +20,16 @@ automatic_session = requests.Session()
 retries = Retry(total=10, backoff_factor=0.1, status_forcelist=[502, 503, 504])
 automatic_session.mount('http://', HTTPAdapter(max_retries=retries))
 pod_tier = os.getenv('Tier', 'standard')
+
+def upload_to_s3(file_content, file_name, bucket_name, path_prefix=""):
+    """Upload a file to S3, but don't fail the request if upload fails."""
+    s3 = boto3.client('s3')
+    try:
+        full_file_name = f"{path_prefix}{file_name}"
+        s3.put_object(Body=file_content, Bucket=bucket_name, Key=full_file_name)
+        logger.info(f"File uploaded successfully to S3: {full_file_name}")
+    except Exception as e:
+        logger.error(f"Error uploading file to S3: {e}. Continuing without failing the request.")
 
 def truncate_string(s, max_length=15):
     return (s[:max_length] + '...') if len(s) > max_length else s
@@ -71,6 +82,7 @@ def generate_mask(width, height, divisions):
     return masks
 
 def handler(event):
+    """Main handler function."""
     logger.info(f"{pod_tier} - Handler started")
     logger.debug(f"{pod_tier} - Event: {json.dumps(event, indent=2)}")
 
@@ -110,7 +122,31 @@ def handler(event):
             logger.info(f"{pod_tier} - Processing txt2img request")
             json_response = txt2img_inference(input)
 
-        logger.info(f"{pod_tier} - Processing completed")
+        # Save output to S3 as PNG
+        images = json_response.get('images', [])
+        bucket_name = os.getenv('S3_BUCKET_NAME')
+        path_prefix = "runpod_sdxl_container_images/"
+
+        for i, img_base64 in enumerate(images):
+            # Decode base64 to binary image data
+            img_data = base64.b64decode(img_base64)
+            img = Image.open(io.BytesIO(img_data))
+
+            # Save as PNG in memory
+            png_buffer = io.BytesIO()
+            img.save(png_buffer, format='PNG')
+            png_buffer.seek(0)
+
+            # Upload to S3
+            file_name = f"output_image_{time.time()}_{i}.png"
+            upload_to_s3(
+                file_content=png_buffer.getvalue(),
+                file_name=file_name,
+                bucket_name=bucket_name,
+                path_prefix=path_prefix
+            )
+
+        logger.info(f"{pod_tier} - Processing completed and images uploaded to S3")
         return json_response
 
     except Exception as e:
@@ -126,7 +162,7 @@ def handler(event):
             ]
         }
         return error_response
-
+    
 def test_mask_generation():
     test_divisions = [0.2, 0.5, 0.3]
     width, height = 1360, 768

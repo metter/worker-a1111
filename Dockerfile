@@ -134,9 +134,11 @@ RUN python /stable-diffusion-webui/launch.py \
 RUN python -c "import torch; print('CUDA available:', torch.cuda.is_available()); print('CUDA version:', torch.version.cuda)"
 
 # Copy additional resources
-COPY loras /stable-diffusion-webui/models/Lora
+COPY sdxl-lora /stable-diffusion-webui/models/Lora
 COPY src/base64_encoder.py /base64_encoder.py
 ADD src .
+
+RUN pip install boto3
 
 # Cleanup
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
